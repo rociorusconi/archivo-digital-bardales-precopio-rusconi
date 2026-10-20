@@ -170,10 +170,6 @@ Reglas de dominio identificadas:
 
 ## 8. Preguntas abiertas / próximos pasos
 
-- Versión de Java: la consigna y el backlog indican Java 17, pero `AGENTS.md` dice Java 21.
-  Definir una y unificar.
-- Organización de paquetes: `AGENTS.md` organiza por capa; el módulo por dominio queda como
-  agrupación lógica. Confirmar que es el criterio del equipo.
 - Búsqueda por tags: ¿coincidencia con todos los tags indicados (AND) o con alguno (OR)?
 - Búsqueda por fecha: ¿fecha exacta o rango?
 - Bot de Telegram: ¿long polling o webhook? (long polling es más simple para correr en local).
@@ -183,6 +179,8 @@ Reglas de dominio identificadas:
 
 ## 9. Referencias
 
+- Versión de Java: Java 21.
 - Convenciones de código: [`AGENTS.md`](AGENTS.md).
+- El equipo adopta la organización de paquetes por capa (controller, service, repository, model, dto) en el código Java según lo especificado en AGENTS.md. La división por módulos de dominio (Digitalización, Catalogación, Disponibilización, Visualización) se mantiene de forma lógica para la trazabilidad de requerimientos funcionales, etiquetas de GitHub y organización del tablero Kanban.
 - Consigna: TP Integrador de Diseño de Software.
 - Caso de estudio: "Archivo Digital" (Ingeniería del Software I).
