@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FindBugsFilter>
+  <!--
+    EI_EXPOSE_REP / EI_EXPOSE_REP2: SpotBugs flags getters/setters that return or store direct
+    references to mutable objects. Domain/JPA entities under `model` reference other entities
+    and JPA-managed collections; defensively copying those would break entity identity and ORM
+    semantics, so it's excluded for that package.
+  -->
+  <Match>
+    <Package name="ar.edu.unsam.ddso.tp.model" />
+    <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2" />
+  </Match>
+</FindBugsFilter>
