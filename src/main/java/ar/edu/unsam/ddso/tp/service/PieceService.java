@@ -9,6 +9,7 @@ import ar.edu.unsam.ddso.tp.model.Digitization;
 import ar.edu.unsam.ddso.tp.model.Piece;
 import ar.edu.unsam.ddso.tp.repository.DigitizationRepository;
 import ar.edu.unsam.ddso.tp.repository.PieceRepository;
+import java.util.HashSet;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,7 +40,7 @@ public class PieceService {
     Piece piece =
         pieceRepository.findById(pieceId).orElseThrow(() -> new PieceNotFoundException(pieceId));
     Digitization digitization =
-        new Digitization(null, request.url(), request.description(), piece);
+        new Digitization(null, request.url(), request.description(), piece, new HashSet<>());
     Digitization saved = digitizationRepository.save(digitization);
     return toResponse(saved);
   }

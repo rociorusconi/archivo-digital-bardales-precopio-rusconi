@@ -17,6 +17,7 @@ import ar.edu.unsam.ddso.tp.model.Piece;
 import ar.edu.unsam.ddso.tp.repository.DigitizationRepository;
 import ar.edu.unsam.ddso.tp.repository.PieceRepository;
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -65,7 +66,8 @@ class PieceServiceTest {
     when(pieceRepository.findById(5L)).thenReturn(Optional.of(piece));
     when(digitizationRepository.save(any(Digitization.class)))
         .thenReturn(
-            new Digitization(10L, "https://files.example/letter-p1.pdf", "Scan of page 1", piece));
+            new Digitization(
+                10L, "https://files.example/letter-p1.pdf", "Scan of page 1", piece, new HashSet<>()));
 
     // When
     DigitizationResponseDTO response = pieceService.addDigitization(5L, request);
