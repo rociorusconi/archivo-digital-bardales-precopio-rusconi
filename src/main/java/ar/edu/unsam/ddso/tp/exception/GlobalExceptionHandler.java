@@ -2,6 +2,7 @@ package ar.edu.unsam.ddso.tp.exception;
 
 import ar.edu.unsam.ddso.tp.dto.ErrorResponseDTO;
 import ar.edu.unsam.ddso.tp.model.exceptions.DuplicateTagException;
+import ar.edu.unsam.ddso.tp.model.exceptions.InvalidDateRangeException;
 import ar.edu.unsam.ddso.tp.model.exceptions.InvalidTagNameException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,8 +22,8 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.CONFLICT, ex);
     }
 
-    @ExceptionHandler(InvalidTagNameException.class)
-    public ResponseEntity<ErrorResponseDTO> handleBadRequest(InvalidTagNameException ex) {
+    @ExceptionHandler({InvalidTagNameException.class, InvalidDateRangeException.class})
+    public ResponseEntity<ErrorResponseDTO> handleBadRequest(RuntimeException ex) {
         return buildResponse(HttpStatus.BAD_REQUEST, ex);
     }
 
