@@ -10,4 +10,12 @@
     <Package name="ar.edu.unsam.ddso.tp.model" />
     <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2" />
   </Match>
+  <!--
+    EI_EXPOSE_REP2 in controllers: the "mutable object" stored by the constructor is the service
+    bean injected by Spring. Sharing that reference is how dependency injection works.
+  -->
+  <Match>
+    <Package name="ar.edu.unsam.ddso.tp.controller" />
+    <Bug pattern="EI_EXPOSE_REP2" />
+  </Match>
 </FindBugsFilter>

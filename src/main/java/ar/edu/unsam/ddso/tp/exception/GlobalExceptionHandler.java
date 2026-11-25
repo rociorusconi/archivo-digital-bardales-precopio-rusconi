@@ -12,7 +12,11 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler({PieceNotFoundException.class, TagNotFoundException.class})
+    @ExceptionHandler({
+        PieceNotFoundException.class,
+        TagNotFoundException.class,
+        DigitizationNotFoundException.class
+    })
     public ResponseEntity<ErrorResponseDTO> handleNotFound(RuntimeException ex) {
         return buildResponse(HttpStatus.NOT_FOUND, ex);
     }
