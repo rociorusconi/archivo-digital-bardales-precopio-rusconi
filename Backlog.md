@@ -27,7 +27,7 @@ El tablero tiene una columna por módulo del dominio, más una de documentación
 | `RF-DISP-03` | Motor de búsqueda y consulta por múltiples criterios |
 | `RF-VIS-01` | Consulta pública e interacción vía bot de Telegram |
 | `Documentación` | Artefactos, diagramas (`.puml` / `.mermaid`), `api.md` y `test.md` |
-| `Transversal` | *(propuesto)* Tareas que no pertenecen a un único módulo |
+| `Transversal` | Tareas que no pertenecen a un único módulo |
 
 ## 3. Issues
 

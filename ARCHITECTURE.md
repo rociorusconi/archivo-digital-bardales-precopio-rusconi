@@ -138,7 +138,8 @@ repositorios directamente.
 
 ## 7. Diagrama de clases de dominio
 
-Versión preliminar, a refinar al diseñar las entidades.
+Vista simplificada con las entidades del dominio y sus relaciones. El diseño detallado por
+capas de cada módulo está en `docs/diagrams/class-diagram.md`.
 
 ```mermaid
 classDiagram
