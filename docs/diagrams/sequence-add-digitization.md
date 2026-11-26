@@ -40,7 +40,7 @@ sequenceDiagram
         DR-->>PS: saved Digitization (with id)
         PS->>PS: toResponse(saved)
         PS-->>PC: DigitizationResponseDTO
-        PC-->>Client: 201 Created<br/>{ id, url, description, pieceId }
+        PC-->>Client: 201 Created<br/>{ id, url, description, pieceId, tags: [] }
     end
 ```
 
@@ -67,7 +67,7 @@ Content-Type: application/json
 Respuesta `201 Created`:
 
 ```json
-{ "id": 10, "url": "https://files.example/letter-p1.pdf", "description": "Scan of page 1", "pieceId": 1 }
+{ "id": 10, "url": "https://files.example/letter-p1.pdf", "description": "Scan of page 1", "pieceId": 1, "tags": [] }
 ```
 
 Respuesta cuando la pieza `99` no existe, `404 Not Found`:

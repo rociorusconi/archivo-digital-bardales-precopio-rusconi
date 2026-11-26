@@ -55,6 +55,7 @@ classDiagram
             -String description
             -Piece piece
             -Set~Tag~ tags
+            +addTag(Tag tag) void
         }
         class Tag {
             <<Entity>>
@@ -88,6 +89,7 @@ classDiagram
             String url
             String description
             Long pieceId
+            List~TagResponseDTO~ tags
         }
         class ErrorResponseDTO {
             <<record>>
@@ -136,6 +138,6 @@ classDiagram
 - **Piece ↔ Digitization:** una digitalización siempre pertenece a una pieza (`@ManyToOne`,
   `piece_id` es obligatorio). Una pieza puede tener cero o muchas digitalizaciones.
 - **Digitization ↔ Tag:** relación muchos a muchos (`@ManyToMany`), guardada en la tabla
-  intermedia `digitization_tags`. Una digitalización nueva se crea sin tags.
+  intermedia `digitization_tags`. Una digitalización nueva se crea sin tags; los tags se asignan con `addTag`, que no agrega un tag repetido (ver `sequence-assign-tag.md`). La respuesta (`DigitizationResponseDTO`) incluye los tags de la digitalización.
 - **Errores:** el service lanza `PieceNotFoundException` y `GlobalExceptionHandler` la
   traduce a un HTTP 404 con un `ErrorResponseDTO` en el cuerpo.

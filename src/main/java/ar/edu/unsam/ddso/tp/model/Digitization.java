@@ -11,6 +11,7 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -45,4 +46,11 @@ public class Digitization {
       joinColumns = @JoinColumn(name = "digitization_id"),
       inverseJoinColumns = @JoinColumn(name = "tag_id"))
   private Set<Tag> tags = new HashSet<>();
+
+  public void addTag(Tag tag) {
+    boolean alreadyTagged = tags.stream().anyMatch(t -> Objects.equals(t.getId(), tag.getId()));
+    if (!alreadyTagged) {
+      tags.add(tag);
+    }
+  }
 }

@@ -1,0 +1,25 @@
+package ar.edu.unsam.ddso.tp.controller;
+
+import ar.edu.unsam.ddso.tp.dto.DigitizationResponseDTO;
+import ar.edu.unsam.ddso.tp.service.DigitizationService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/digitizations")
+public class DigitizationController {
+
+    private final DigitizationService digitizationService;
+
+    public DigitizationController(DigitizationService digitizationService) {
+        this.digitizationService = digitizationService;
+    }
+
+    @PostMapping("/{id}/tags/{tagId}")
+    public ResponseEntity<DigitizationResponseDTO> addTag(@PathVariable Long id, @PathVariable Long tagId) {
+        return ResponseEntity.ok(digitizationService.addTag(id, tagId));
+    }
+}

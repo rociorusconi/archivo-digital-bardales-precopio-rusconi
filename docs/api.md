@@ -19,7 +19,7 @@ Documentación de los endpoints expuestos por la aplicación.
 | `200 OK` | Consulta o modificación exitosa |
 | `201 Created` | Recurso creado |
 | `204 No Content` | Recurso eliminado |
-| `400 Bad Request` | Datos inválidos (nombre de tag vacío, rango de fechas invertido) |
+| `400 Bad Request` | Datos inválidos (nombre de tag vacío, rango de fechas invertido, fecha mal escrita) |
 | `404 Not Found` | El recurso pedido no existe |
 | `409 Conflict` | Conflicto con el estado actual (tag duplicado o tag en uso) |
 
@@ -34,6 +34,7 @@ Documentación de los endpoints expuestos por la aplicación.
 | Catalogación | `POST` | `/api/tags` | Crear un tag |
 | Catalogación | `PUT` | `/api/tags/{id}` | Renombrar un tag |
 | Catalogación | `DELETE` | `/api/tags/{id}` | Eliminar un tag |
+| Catalogación | `POST` | `/api/digitizations/{id}/tags/{tagId}` | Asignar un tag a una digitalización |
 | Disponibilización | `GET` | `/api/pieces/search` | Buscar piezas con filtros y paginación |
 
 ---
@@ -92,7 +93,7 @@ crea sin tags.
 **Respuesta `201 Created`**
 
 ```json
-{ "id": 10, "url": "https://files.example/letter-p1.pdf", "description": "Scan of page 1", "pieceId": 1 }
+{ "id": 10, "url": "https://files.example/letter-p1.pdf", "description": "Scan of page 1", "pieceId": 1, "tags": [] }
 ```
 
 **Errores**
@@ -220,6 +221,41 @@ digitalización, para no perder catalogación sin aviso.
 | `404` | El tag no existe | `{ "status": 404, "message": "Tag not found: 99" }` |
 | `409` | El tag está asignado a alguna digitalización | `{ "status": 409, "message": "Tag is assigned to at least one digitization and cannot be deleted: 1" }` |
 
+### `POST /api/digitizations/{id}/tags/{tagId}` — Asignar un tag a una digitalización
+
+Controller: `DigitizationController` · Service: `DigitizationService`
+
+Cataloga una digitalización con un tag del conjunto vigente. Si la digitalización ya tiene ese
+tag, no se duplica (la operación responde igual). No lleva body.
+
+**Parámetros de URL**
+
+| Parámetro | Tipo | Descripción |
+|---|---|---|
+| `id` | `Long` | Id de la digitalización |
+| `tagId` | `Long` | Id del tag |
+
+**Respuesta `200 OK`**
+
+La digitalización con todos sus tags, ordenados por nombre.
+
+```json
+{
+  "id": 10,
+  "url": "https://files.example/letter-p1.pdf",
+  "description": "Scan of page 1",
+  "pieceId": 1,
+  "tags": [ { "id": 2, "name": "Letters" }, { "id": 1, "name": "Press" } ]
+}
+```
+
+**Errores**
+
+| Código | Cuándo | Ejemplo |
+|---|---|---|
+| `404` | La digitalización no existe | `{ "status": 404, "message": "Digitization not found with id: 99" }` |
+| `404` | El tag no existe | `{ "status": 404, "message": "Tag not found: 99" }` |
+
 ---
 
 ## Disponibilización
@@ -273,9 +309,8 @@ GET /api/pieces/search?name=letter&dateFrom=1970-01-01&dateTo=1980-12-31&page=0&
 | Código | Cuándo | Ejemplo |
 |---|---|---|
 | `400` | `dateFrom` es posterior a `dateTo` | `{ "status": 400, "message": "Invalid date range: dateFrom 1990-01-01 is after dateTo 1980-01-01" }` |
+| `400` | Una fecha no tiene formato ISO (por ejemplo `03/05/1977`) | Respuesta de error estándar de Spring |
 
-> **Pendientes:**
-> - Todavía no hay un endpoint para asignar tags a una digitalización (issues #6 y #7), así que
->   el filtro `tags` por ahora no devuelve resultados.
+> **Pendiente:**
 > - Los caracteres `%` y `_` en `name` o `description` no se escapan y funcionan como comodines
 >   (por ejemplo, `name=%` devuelve todas las piezas).
