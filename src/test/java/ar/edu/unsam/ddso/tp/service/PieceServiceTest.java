@@ -10,15 +10,20 @@ import static org.mockito.Mockito.when;
 import ar.edu.unsam.ddso.tp.dto.DigitizationCreateRequestDTO;
 import ar.edu.unsam.ddso.tp.dto.DigitizationResponseDTO;
 import ar.edu.unsam.ddso.tp.dto.PieceCreateRequestDTO;
+import ar.edu.unsam.ddso.tp.dto.PieceDetailResponseDTO;
 import ar.edu.unsam.ddso.tp.dto.PieceResponseDTO;
+import ar.edu.unsam.ddso.tp.dto.TagResponseDTO;
 import ar.edu.unsam.ddso.tp.exception.PieceNotFoundException;
 import ar.edu.unsam.ddso.tp.model.Digitization;
 import ar.edu.unsam.ddso.tp.model.Piece;
+import ar.edu.unsam.ddso.tp.model.Tag;
 import ar.edu.unsam.ddso.tp.repository.DigitizationRepository;
 import ar.edu.unsam.ddso.tp.repository.PieceRepository;
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -77,6 +82,43 @@ class PieceServiceTest {
     assertEquals("https://files.example/letter-p1.pdf", response.url());
     assertEquals("Scan of page 1", response.description());
     assertEquals(5L, response.pieceId());
+  }
+
+  @Test
+  void getPieceReturnsThePieceWithItsDigitizationsAndTags() {
+    // Given
+    Piece piece = new Piece(5L, "Letter from Cordoba", "Handwritten letter", LocalDate.of(1977, 5, 3));
+    Digitization scan =
+        new Digitization(
+            10L,
+            "https://files.example/letter-p1.pdf",
+            "Scan of page 1",
+            piece,
+            new HashSet<>(Set.of(new Tag(2L, "Press"), new Tag(1L, "Letters"))));
+    when(pieceRepository.findById(5L)).thenReturn(Optional.of(piece));
+    when(digitizationRepository.findByPieceIdOrderByIdAsc(5L)).thenReturn(List.of(scan));
+
+    // When
+    PieceDetailResponseDTO response = pieceService.getPiece(5L);
+
+    // Then
+    assertEquals(5L, response.id());
+    assertEquals("Letter from Cordoba", response.name());
+    assertEquals(1, response.digitizations().size());
+    assertEquals("https://files.example/letter-p1.pdf", response.digitizations().get(0).url());
+    assertEquals(
+        List.of(new TagResponseDTO(1L, "Letters"), new TagResponseDTO(2L, "Press")),
+        response.digitizations().get(0).tags());
+  }
+
+  @Test
+  void getMissingPieceThrowsPieceNotFoundException() {
+    // Given
+    when(pieceRepository.findById(99L)).thenReturn(Optional.empty());
+
+    // When / Then
+    assertThrows(PieceNotFoundException.class, () -> pieceService.getPiece(99L));
+    verify(digitizationRepository, never()).findByPieceIdOrderByIdAsc(any());
   }
 
   @Test

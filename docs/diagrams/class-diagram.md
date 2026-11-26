@@ -10,6 +10,7 @@ classDiagram
     namespace controller {
         class PieceController {
             -PieceService pieceService
+            +getPiece(Long id) ResponseEntity~PieceDetailResponseDTO~
             +createPiece(PieceCreateRequestDTO request) ResponseEntity~PieceResponseDTO~
             +addDigitization(Long id, DigitizationCreateRequestDTO request) ResponseEntity~DigitizationResponseDTO~
         }
@@ -19,6 +20,7 @@ classDiagram
         class PieceService {
             -PieceRepository pieceRepository
             -DigitizationRepository digitizationRepository
+            +getPiece(Long id) PieceDetailResponseDTO
             +createPiece(PieceCreateRequestDTO request) PieceResponseDTO
             +addDigitization(Long pieceId, DigitizationCreateRequestDTO request) DigitizationResponseDTO
             -toResponse(Piece piece) PieceResponseDTO
@@ -32,6 +34,7 @@ classDiagram
         }
         class DigitizationRepository {
             <<interface>>
+            +findByPieceIdOrderByIdAsc(Long pieceId) List~Digitization~
         }
         class JpaRepository {
             <<interface>>
@@ -78,6 +81,14 @@ classDiagram
             String description
             LocalDate date
         }
+        class PieceDetailResponseDTO {
+            <<record>>
+            Long id
+            String name
+            String description
+            LocalDate date
+            List~DigitizationResponseDTO~ digitizations
+        }
         class DigitizationCreateRequestDTO {
             <<record>>
             String url
@@ -123,6 +134,7 @@ classDiagram
     PieceController ..> PieceCreateRequestDTO : receives
     PieceController ..> DigitizationCreateRequestDTO : receives
     PieceService ..> PieceResponseDTO : returns
+    PieceService ..> PieceDetailResponseDTO : returns
     PieceService ..> DigitizationResponseDTO : returns
     PieceService ..> PieceNotFoundException : throws
     GlobalExceptionHandler ..> PieceNotFoundException : handles
@@ -139,5 +151,8 @@ classDiagram
   `piece_id` es obligatorio). Una pieza puede tener cero o muchas digitalizaciones.
 - **Digitization ↔ Tag:** relación muchos a muchos (`@ManyToMany`), guardada en la tabla
   intermedia `digitization_tags`. Una digitalización nueva se crea sin tags; los tags se asignan con `addTag`, que no agrega un tag repetido (ver `sequence-assign-tag.md`). La respuesta (`DigitizationResponseDTO`) incluye los tags de la digitalización.
+- **Detalle de una pieza:** `getPiece` trae la pieza y después sus digitalizaciones con
+  `findByPieceIdOrderByIdAsc`, que usa `@EntityGraph` para cargar los tags en la misma consulta
+  (dos consultas en total, sin importar cuántas digitalizaciones tenga la pieza).
 - **Errores:** el service lanza `PieceNotFoundException` y `GlobalExceptionHandler` la
   traduce a un HTTP 404 con un `ErrorResponseDTO` en el cuerpo.
