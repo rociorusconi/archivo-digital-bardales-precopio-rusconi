@@ -1,6 +1,7 @@
 # API REST — Archivo Digital
 
 Documentación de los endpoints expuestos por la aplicación.
+El bot de Telegram (Visualización) no es una API web: se documenta en [`bot.md`](bot.md).
 
 ## Información general
 
