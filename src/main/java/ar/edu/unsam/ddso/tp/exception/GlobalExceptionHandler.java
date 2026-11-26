@@ -4,6 +4,7 @@ import ar.edu.unsam.ddso.tp.dto.ErrorResponseDTO;
 import ar.edu.unsam.ddso.tp.model.exceptions.DuplicateTagException;
 import ar.edu.unsam.ddso.tp.model.exceptions.InvalidDateRangeException;
 import ar.edu.unsam.ddso.tp.model.exceptions.InvalidTagNameException;
+import ar.edu.unsam.ddso.tp.model.exceptions.TagInUseException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -17,8 +18,8 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.NOT_FOUND, ex);
     }
 
-    @ExceptionHandler(DuplicateTagException.class)
-    public ResponseEntity<ErrorResponseDTO> handleConflict(DuplicateTagException ex) {
+    @ExceptionHandler({DuplicateTagException.class, TagInUseException.class})
+    public ResponseEntity<ErrorResponseDTO> handleConflict(RuntimeException ex) {
         return buildResponse(HttpStatus.CONFLICT, ex);
     }
 
