@@ -138,7 +138,8 @@ repositorios directamente.
 
 ## 7. Diagrama de clases de dominio
 
-Versión preliminar, a refinar al diseñar las entidades.
+Vista simplificada con las entidades del dominio y sus relaciones. El diseño detallado por
+capas de cada módulo está en `docs/diagrams/class-diagram.md`.
 
 ```mermaid
 classDiagram
@@ -168,14 +169,21 @@ Reglas de dominio identificadas:
 - La búsqueda devuelve piezas (no digitalizaciones); una pieza coincide por tag si alguna de
   sus digitalizaciones tiene ese tag.
 
-## 8. Preguntas abiertas / próximos pasos
+## 8. Decisiones tomadas / próximos pasos
 
-- Búsqueda por tags: ¿coincidencia con todos los tags indicados (AND) o con alguno (OR)?
-- Búsqueda por fecha: ¿fecha exacta o rango?
-- Bot de Telegram: ¿long polling o webhook? (long polling es más simple para correr en local).
-- Paginación y orden de resultados de la búsqueda.
-- Próximo paso: definir issues y labels en `Backlog.md`, completar el README y luego diseñar
-  diagramas de base de datos y de secuencia.
+### Decisiones
+- **Búsqueda por tags:** coincidencia con todos los tags indicados (AND).
+- **Búsqueda por fecha:** rango inclusivo (`dateFrom` / `dateTo`, ambos opcionales).
+  Una fecha exacta se busca con `dateFrom` = `dateTo`.
+- **Paginación y orden:** 20 resultados por página por defecto, máximo 50.
+  Orden por fecha descendente y, ante empate, por id.
+- **Bot de Telegram:** long polling, porque permite correrlo en local sin exponer
+  la aplicación a internet. *(a confirmar por el grupo)*
+- **Issues y labels:** definidos en `Backlog.md` y cargados en GitHub Projects.
+
+### Próximos pasos
+- Completar el README.
+- Diseñar los diagramas de base de datos y de secuencia.
 
 ## 9. Referencias
 
