@@ -10,6 +10,8 @@ import ar.edu.unsam.ddso.tp.exception.TagNotFoundException;
 import ar.edu.unsam.ddso.tp.model.Tag;
 import ar.edu.unsam.ddso.tp.model.exceptions.DuplicateTagException;
 import ar.edu.unsam.ddso.tp.model.exceptions.InvalidTagNameException;
+import ar.edu.unsam.ddso.tp.model.exceptions.TagInUseException;
+import ar.edu.unsam.ddso.tp.repository.DigitizationRepository;
 import ar.edu.unsam.ddso.tp.repository.TagRepository;
 import java.util.List;
 import java.util.Optional;
@@ -23,12 +25,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class TagServiceTest {
 
     @Mock private TagRepository tagRepository;
+    @Mock private DigitizationRepository digitizationRepository;
 
     private TagService tagService;
 
     @BeforeEach
     void setUp() {
-        tagService = new TagService(tagRepository);
+        tagService = new TagService(tagRepository, digitizationRepository);
     }
 
     @Test
@@ -109,5 +112,40 @@ class TagServiceTest {
         // Then
         assertEquals(2, result.size());
         assertEquals("press", result.get(1).name());
+    }
+
+    @Test
+    void deleteRemovesTagNotAssignedToAnyDigitization() {
+        // Given
+        Tag tag = new Tag(1L, "photo");
+        when(tagRepository.findById(1L)).thenReturn(Optional.of(tag));
+        when(digitizationRepository.existsByTagsId(1L)).thenReturn(false);
+
+        // When
+        tagService.delete(1L);
+
+        // Then
+        verify(tagRepository).delete(tag);
+    }
+
+    @Test
+    void deleteTagAssignedToADigitizationFailsAndDoesNotDelete() {
+        // Given
+        when(tagRepository.findById(1L)).thenReturn(Optional.of(new Tag(1L, "photo")));
+        when(digitizationRepository.existsByTagsId(1L)).thenReturn(true);
+
+        // When / Then
+        assertThrows(TagInUseException.class, () -> tagService.delete(1L));
+        verify(tagRepository, never()).delete(any(Tag.class));
+    }
+
+    @Test
+    void deleteNonExistentTagFails() {
+        // Given
+        when(tagRepository.findById(99L)).thenReturn(Optional.empty());
+
+        // When / Then
+        assertThrows(TagNotFoundException.class, () -> tagService.delete(99L));
+        verify(tagRepository, never()).delete(any(Tag.class));
     }
 }

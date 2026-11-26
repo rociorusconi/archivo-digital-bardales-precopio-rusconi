@@ -18,9 +18,10 @@ Documentación de los endpoints expuestos por la aplicación.
 |---|---|
 | `200 OK` | Consulta o modificación exitosa |
 | `201 Created` | Recurso creado |
+| `204 No Content` | Recurso eliminado |
 | `400 Bad Request` | Datos inválidos (nombre de tag vacío, rango de fechas invertido, fecha mal escrita) |
 | `404 Not Found` | El recurso pedido no existe |
-| `409 Conflict` | El recurso ya existe (tag duplicado) |
+| `409 Conflict` | Conflicto con el estado actual (tag duplicado o tag en uso) |
 
 ## Resumen de endpoints
 
@@ -33,6 +34,7 @@ Documentación de los endpoints expuestos por la aplicación.
 | Catalogación | `GET` | `/api/tags/{id}` | Obtener un tag por id |
 | Catalogación | `POST` | `/api/tags` | Crear un tag |
 | Catalogación | `PUT` | `/api/tags/{id}` | Renombrar un tag |
+| Catalogación | `DELETE` | `/api/tags/{id}` | Eliminar un tag |
 | Catalogación | `POST` | `/api/digitizations/{id}/tags/{tagId}` | Asignar un tag a una digitalización |
 | Disponibilización | `GET` | `/api/pieces/search` | Buscar piezas con filtros y paginación |
 
@@ -239,6 +241,26 @@ Aplica las mismas reglas de nombre que la creación.
 | `400` | El nombre está vacío | `{ "status": 400, "message": "Tag name must not be empty" }` |
 | `404` | El tag no existe | `{ "status": 404, "message": "Tag not found: 99" }` |
 | `409` | Otro tag ya tiene ese nombre | `{ "status": 409, "message": "Tag already exists: Newspapers" }` |
+
+### `DELETE /api/tags/{id}` — Eliminar un tag
+
+Quita un tag del conjunto vigente. Solo se puede eliminar un tag que no esté asignado a ninguna
+digitalización, para no perder catalogación sin aviso.
+
+**Parámetros de URL**
+
+| Parámetro | Tipo | Descripción |
+|---|---|---|
+| `id` | `Long` | Id del tag |
+
+**Respuesta `204 No Content`** (sin body)
+
+**Errores**
+
+| Código | Cuándo | Ejemplo |
+|---|---|---|
+| `404` | El tag no existe | `{ "status": 404, "message": "Tag not found: 99" }` |
+| `409` | El tag está asignado a alguna digitalización | `{ "status": 409, "message": "Tag is assigned to at least one digitization and cannot be deleted: 1" }` |
 
 ### `POST /api/digitizations/{id}/tags/{tagId}` — Asignar un tag a una digitalización
 

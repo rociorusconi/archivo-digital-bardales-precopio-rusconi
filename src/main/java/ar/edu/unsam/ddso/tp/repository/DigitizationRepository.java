@@ -7,7 +7,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface DigitizationRepository extends JpaRepository<Digitization, Long> {
 
-  // Loads the tags in the same query to avoid one extra query per digitization (N+1).
-  @EntityGraph(attributePaths = "tags")
-  List<Digitization> findByPieceIdOrderByIdAsc(Long pieceId);
+    boolean existsByTagsId(Long tagId);
+
+    // Loads the tags in the same query to avoid one extra query per digitization (N+1).
+    @EntityGraph(attributePaths = "tags")
+    List<Digitization> findByPieceIdOrderByIdAsc(Long pieceId);
 }

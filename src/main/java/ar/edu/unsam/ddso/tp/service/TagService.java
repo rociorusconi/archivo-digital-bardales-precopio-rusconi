@@ -6,6 +6,8 @@ import ar.edu.unsam.ddso.tp.exception.TagNotFoundException;
 import ar.edu.unsam.ddso.tp.model.Tag;
 import ar.edu.unsam.ddso.tp.model.exceptions.DuplicateTagException;
 import ar.edu.unsam.ddso.tp.model.exceptions.InvalidTagNameException;
+import ar.edu.unsam.ddso.tp.model.exceptions.TagInUseException;
+import ar.edu.unsam.ddso.tp.repository.DigitizationRepository;
 import ar.edu.unsam.ddso.tp.repository.TagRepository;
 import java.util.List;
 import org.springframework.stereotype.Service;
@@ -15,9 +17,11 @@ import org.springframework.transaction.annotation.Transactional;
 public class TagService {
 
     private final TagRepository tagRepository;
+    private final DigitizationRepository digitizationRepository;
 
-    public TagService(TagRepository tagRepository) {
+    public TagService(TagRepository tagRepository, DigitizationRepository digitizationRepository) {
         this.tagRepository = tagRepository;
+        this.digitizationRepository = digitizationRepository;
     }
 
     // ---------- Consultas ----------
@@ -52,6 +56,15 @@ public class TagService {
         }
         tag.setName(name);
         return toResponse(tagRepository.save(tag));
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        Tag tag = getTag(id);
+        if (digitizationRepository.existsByTagsId(id)) {
+            throw new TagInUseException(id);
+        }
+        tagRepository.delete(tag);
     }
 
     // ---------- Privados ----------
