@@ -96,4 +96,43 @@ class DigitizationServiceTest {
         assertThrows(TagNotFoundException.class, () -> digitizationService.addTag(10L, 99L));
         verify(digitizationRepository, never()).save(any(Digitization.class));
     }
+
+    @Test
+    void removeTagRemovesOnlyThatTagAndReturnsTheRemainingTags() {
+        // Given
+        digitization.setTags(new HashSet<>(Set.of(new Tag(5L, "Press"), new Tag(6L, "Letters"))));
+        when(digitizationRepository.findById(10L)).thenReturn(Optional.of(digitization));
+        when(digitizationRepository.save(digitization)).thenReturn(digitization);
+
+        // When
+        DigitizationResponseDTO response = digitizationService.removeTag(10L, 5L);
+
+        // Then
+        assertEquals(List.of(new TagResponseDTO(6L, "Letters")), response.tags());
+        verify(digitizationRepository).save(digitization);
+    }
+
+    @Test
+    void removeTagTheDigitizationDoesNotHaveLeavesItsTagsUnchanged() {
+        // Given
+        digitization.setTags(new HashSet<>(Set.of(new Tag(6L, "Letters"))));
+        when(digitizationRepository.findById(10L)).thenReturn(Optional.of(digitization));
+        when(digitizationRepository.save(digitization)).thenReturn(digitization);
+
+        // When
+        DigitizationResponseDTO response = digitizationService.removeTag(10L, 5L);
+
+        // Then
+        assertEquals(List.of(new TagResponseDTO(6L, "Letters")), response.tags());
+    }
+
+    @Test
+    void removeTagFromMissingDigitizationThrowsNotFoundAndDoesNotSave() {
+        // Given
+        when(digitizationRepository.findById(99L)).thenReturn(Optional.empty());
+
+        // When / Then
+        assertThrows(DigitizationNotFoundException.class, () -> digitizationService.removeTag(99L, 5L));
+        verify(digitizationRepository, never()).save(any(Digitization.class));
+    }
 }

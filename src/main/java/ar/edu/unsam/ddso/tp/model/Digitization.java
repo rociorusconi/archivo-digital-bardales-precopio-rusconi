@@ -53,4 +53,8 @@ public class Digitization {
       tags.add(tag);
     }
   }
+
+  public void removeTag(Long tagId) {
+    tags.removeIf(t -> Objects.equals(t.getId(), tagId));
+  }
 }
