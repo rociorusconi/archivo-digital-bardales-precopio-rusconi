@@ -6,6 +6,7 @@ import ar.edu.unsam.ddso.tp.dto.PieceCreateRequestDTO;
 import ar.edu.unsam.ddso.tp.dto.PieceDetailResponseDTO;
 import ar.edu.unsam.ddso.tp.dto.PieceResponseDTO;
 import ar.edu.unsam.ddso.tp.service.PieceService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,13 +33,13 @@ public class PieceController {
 
     @PostMapping
     public ResponseEntity<PieceResponseDTO> createPiece(
-            @RequestBody PieceCreateRequestDTO request) {
+            @Valid @RequestBody PieceCreateRequestDTO request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(pieceService.createPiece(request));
     }
 
     @PostMapping("/{id}/digitizations")
     public ResponseEntity<DigitizationResponseDTO> addDigitization(
-            @PathVariable Long id, @RequestBody DigitizationCreateRequestDTO request) {
+            @PathVariable Long id, @Valid @RequestBody DigitizationCreateRequestDTO request) {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(pieceService.addDigitization(id, request));
     }

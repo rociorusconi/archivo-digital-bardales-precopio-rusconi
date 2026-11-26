@@ -14,12 +14,19 @@ Documentación de los endpoints expuestos por la aplicación.
 { "status": 404, "message": "Piece not found with id: 99" }
 ```
 
+Cuando el body no cumple las validaciones, el `message` indica el campo que falló y por qué. Si
+fallan varios, se listan separados por coma:
+
+```json
+{ "status": 400, "message": "name: must not be blank" }
+```
+
 | Código | Significado |
 |---|---|
 | `200 OK` | Consulta o modificación exitosa |
 | `201 Created` | Recurso creado |
 | `204 No Content` | Recurso eliminado |
-| `400 Bad Request` | Datos inválidos (nombre de tag vacío, rango de fechas invertido, fecha mal escrita) |
+| `400 Bad Request` | Datos inválidos (campo obligatorio vacío, URL mal formada, texto demasiado largo, nombre de tag vacío, rango de fechas invertido, fecha mal escrita) |
 | `404 Not Found` | El recurso pedido no existe |
 | `409 Conflict` | Conflicto con el estado actual (tag duplicado o tag en uso) |
 
@@ -52,7 +59,7 @@ Registra una nueva pieza física en el archivo.
 
 | Campo | Tipo | Obligatorio | Descripción |
 |---|---|---|---|
-| `name` | `String` | Sí | Nombre de la pieza |
+| `name` | `String` | Sí | Nombre de la pieza (no vacío, hasta 255 caracteres) |
 | `description` | `String` | No | Descripción (hasta 1000 caracteres) |
 | `date` | `LocalDate` | No | Fecha de la pieza |
 
@@ -66,8 +73,12 @@ Registra una nueva pieza física en el archivo.
 { "id": 1, "name": "Letter from Cordoba", "description": "Handwritten letter", "date": "1977-05-03" }
 ```
 
-> **Pendiente:** hoy no se valida que `name` venga informado. Si falta, la base de datos
-> rechaza el registro y la respuesta es un `500` genérico en lugar de un `400`.
+**Errores**
+
+| Código | Cuándo | Ejemplo |
+|---|---|---|
+| `400` | Falta `name` o está vacío | `{ "status": 400, "message": "name: must not be blank" }` |
+| `400` | `description` supera los 1000 caracteres | `{ "status": 400, "message": "description: must have at most 1000 characters" }` |
 
 ### `POST /api/pieces/{id}/digitizations` — Agregar una digitalización
 
@@ -84,7 +95,7 @@ crea sin tags.
 
 | Campo | Tipo | Obligatorio | Descripción |
 |---|---|---|---|
-| `url` | `String` | Sí | Ubicación del archivo digital |
+| `url` | `String` | Sí | Ubicación del archivo digital (URL válida, hasta 255 caracteres) |
 | `description` | `String` | No | Descripción (hasta 1000 caracteres) |
 
 ```json
@@ -101,9 +112,9 @@ crea sin tags.
 
 | Código | Cuándo | Ejemplo |
 |---|---|---|
+| `400` | Falta `url` o está vacía | `{ "status": 400, "message": "url: must not be blank" }` |
+| `400` | `url` no tiene formato de URL | `{ "status": 400, "message": "url: must be a valid URL" }` |
 | `404` | La pieza no existe | `{ "status": 404, "message": "Piece not found with id: 99" }` |
-
-> **Pendiente:** al igual que en piezas, si falta `url` la respuesta es un `500` genérico.
 
 ### `GET /api/pieces/{id}` — Ver el detalle de una pieza
 
