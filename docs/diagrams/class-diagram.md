@@ -73,8 +73,8 @@ classDiagram
     namespace dto {
         class PieceCreateRequestDTO {
             <<record>>
-            String name
-            String description
+            @NotBlank @Size(max=255) String name
+            @Size(max=1000) String description
             LocalDate date
         }
         class PieceResponseDTO {
@@ -94,8 +94,8 @@ classDiagram
         }
         class DigitizationCreateRequestDTO {
             <<record>>
-            String url
-            String description
+            @NotBlank @URL @Size(max=255) String url
+            @Size(max=1000) String description
         }
         class DigitizationResponseDTO {
             <<record>>
@@ -119,6 +119,7 @@ classDiagram
         class GlobalExceptionHandler {
             <<RestControllerAdvice>>
             +handleNotFound(RuntimeException ex) ResponseEntity~ErrorResponseDTO~
+            +handleInvalidRequest(MethodArgumentNotValidException ex) ResponseEntity~ErrorResponseDTO~
         }
     }
 
@@ -162,3 +163,4 @@ classDiagram
   (dos consultas en total, sin importar cuántas digitalizaciones tenga la pieza).
 - **Errores:** el service lanza `PieceNotFoundException` y `GlobalExceptionHandler` la
   traduce a un HTTP 404 con un `ErrorResponseDTO` en el cuerpo.
+- **Validación de entrada:** el controller recibe los bodies con `@Valid`. Si un campo no cumple  las anotaciones del DTO, Spring lanza `MethodArgumentNotValidException` antes de llegar al service, y `GlobalExceptionHandler` responde 400 indicando el campo (por ejemplo `"name: must not be blank"`).
