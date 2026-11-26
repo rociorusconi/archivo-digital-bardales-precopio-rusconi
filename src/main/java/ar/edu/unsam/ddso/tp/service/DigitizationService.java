@@ -31,4 +31,12 @@ public class DigitizationService {
         digitization.addTag(tag);
         return DigitizationMapper.toResponse(digitizationRepository.save(digitization));
     }
+
+    @Transactional
+    public DigitizationResponseDTO removeTag(Long digitizationId, Long tagId) {
+        Digitization digitization = digitizationRepository.findById(digitizationId)
+                .orElseThrow(() -> new DigitizationNotFoundException(digitizationId));
+        digitization.removeTag(tagId);
+        return DigitizationMapper.toResponse(digitizationRepository.save(digitization));
+    }
 }

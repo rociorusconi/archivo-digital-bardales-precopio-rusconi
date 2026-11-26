@@ -50,6 +50,7 @@ Otros pedidos mal formados también responden `400` con el mismo formato:
 | Catalogación | `PUT` | `/api/tags/{id}` | Renombrar un tag |
 | Catalogación | `DELETE` | `/api/tags/{id}` | Eliminar un tag |
 | Catalogación | `POST` | `/api/digitizations/{id}/tags/{tagId}` | Asignar un tag a una digitalización |
+| Catalogación | `DELETE` | `/api/digitizations/{id}/tags/{tagId}` | Quitar un tag de una digitalización |
 | Disponibilización | `GET` | `/api/pieces/search` | Buscar piezas con filtros y paginación |
 
 ---
@@ -282,6 +283,9 @@ digitalización, para no perder catalogación sin aviso.
 | `404` | El tag no existe | `{ "status": 404, "message": "Tag not found: 99" }` |
 | `409` | El tag está asignado a alguna digitalización | `{ "status": 409, "message": "Tag is assigned to at least one digitization and cannot be deleted: 1" }` |
 
+Para poder eliminarlo, primero hay que quitarlo de cada digitalización con
+`DELETE /api/digitizations/{id}/tags/{tagId}`.
+
 ### `POST /api/digitizations/{id}/tags/{tagId}` — Asignar un tag a una digitalización
 
 Controller: `DigitizationController` · Service: `DigitizationService`
@@ -316,6 +320,40 @@ La digitalización con todos sus tags, ordenados por nombre.
 |---|---|---|
 | `404` | La digitalización no existe | `{ "status": 404, "message": "Digitization not found with id: 99" }` |
 | `404` | El tag no existe | `{ "status": 404, "message": "Tag not found: 99" }` |
+
+### `DELETE /api/digitizations/{id}/tags/{tagId}` — Quitar un tag de una digitalización
+
+Controller: `DigitizationController` · Service: `DigitizationService`
+
+Quita un tag de una digitalización, por ejemplo cuando se asignó por error. Si la digitalización
+no tiene ese tag, no cambia nada y la operación responde igual. No lleva body.
+
+**Parámetros de URL**
+
+| Parámetro | Tipo | Descripción |
+|---|---|---|
+| `id` | `Long` | Id de la digitalización |
+| `tagId` | `Long` | Id del tag a quitar |
+
+**Respuesta `200 OK`**
+
+La digitalización con los tags que le quedan, ordenados por nombre.
+
+```json
+{
+  "id": 10,
+  "url": "https://files.example/letter-p1.pdf",
+  "description": "Scan of page 1",
+  "pieceId": 1,
+  "tags": [ { "id": 2, "name": "Letters" } ]
+}
+```
+
+**Errores**
+
+| Código | Cuándo | Ejemplo |
+|---|---|---|
+| `404` | La digitalización no existe | `{ "status": 404, "message": "Digitization not found with id: 99" }` |
 
 ---
 

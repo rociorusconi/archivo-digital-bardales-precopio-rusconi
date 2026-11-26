@@ -62,6 +62,7 @@ classDiagram
             -Piece piece
             -Set~Tag~ tags
             +addTag(Tag tag) void
+            +removeTag(Long tagId) void
         }
         class Tag {
             <<Entity>>
@@ -157,7 +158,7 @@ classDiagram
 - **Piece ↔ Digitization:** una digitalización siempre pertenece a una pieza (`@ManyToOne`,
   `piece_id` es obligatorio). Una pieza puede tener cero o muchas digitalizaciones.
 - **Digitization ↔ Tag:** relación muchos a muchos (`@ManyToMany`), guardada en la tabla
-  intermedia `digitization_tags`. Una digitalización nueva se crea sin tags; los tags se asignan con `addTag`, que no agrega un tag repetido (ver `sequence-assign-tag.md`). La respuesta (`DigitizationResponseDTO`) incluye los tags de la digitalización.
+  intermedia `digitization_tags`. Una digitalización nueva se crea sin tags; los tags se asignan con `addTag`, que no agrega un tag repetido, y se quitan con `removeTag` (ver `sequence-assign-tag.md`). La respuesta (`DigitizationResponseDTO`) incluye los tags de la digitalización.
 - **Detalle de una pieza:** `getPiece` trae la pieza y después sus digitalizaciones con
   `findByPieceIdOrderByIdAsc`, que usa `@EntityGraph` para cargar los tags en la misma consulta
   (dos consultas en total, sin importar cuántas digitalizaciones tenga la pieza).
