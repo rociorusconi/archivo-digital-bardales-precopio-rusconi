@@ -29,6 +29,7 @@ Documentación de los endpoints expuestos por la aplicación.
 |---|---|---|---|
 | Digitalización | `POST` | `/api/pieces` | Crear una pieza |
 | Digitalización | `POST` | `/api/pieces/{id}/digitizations` | Agregar una digitalización a una pieza |
+| Digitalización | `GET` | `/api/pieces/{id}` | Ver una pieza con sus digitalizaciones y tags |
 | Catalogación | `GET` | `/api/tags` | Listar todos los tags |
 | Catalogación | `GET` | `/api/tags/{id}` | Obtener un tag por id |
 | Catalogación | `POST` | `/api/tags` | Crear un tag |
@@ -103,6 +104,46 @@ crea sin tags.
 | `404` | La pieza no existe | `{ "status": 404, "message": "Piece not found with id: 99" }` |
 
 > **Pendiente:** al igual que en piezas, si falta `url` la respuesta es un `500` genérico.
+
+### `GET /api/pieces/{id}` — Ver el detalle de una pieza
+
+Devuelve la pieza con sus digitalizaciones (ordenadas por id) y los tags de cada una (ordenados
+por nombre). Sirve para comprobar el resultado de la digitalización y la catalogación, y para
+mostrar los links a los medios. Las digitalizaciones y sus tags se traen en una sola consulta.
+
+**Parámetros de URL**
+
+| Parámetro | Tipo | Descripción |
+|---|---|---|
+| `id` | `Long` | Id de la pieza |
+
+**Respuesta `200 OK`**
+
+```json
+{
+  "id": 1,
+  "name": "Letter from Cordoba",
+  "description": "Handwritten letter",
+  "date": "1977-05-03",
+  "digitizations": [
+    {
+      "id": 10,
+      "url": "https://files.example/letter-p1.pdf",
+      "description": "Scan of page 1",
+      "pieceId": 1,
+      "tags": [ { "id": 2, "name": "Letters" }, { "id": 1, "name": "Press" } ]
+    }
+  ]
+}
+```
+
+Una pieza sin digitalizaciones responde con `"digitizations": []`.
+
+**Errores**
+
+| Código | Cuándo | Ejemplo |
+|---|---|---|
+| `404` | La pieza no existe | `{ "status": 404, "message": "Piece not found with id: 99" }` |
 
 ---
 
