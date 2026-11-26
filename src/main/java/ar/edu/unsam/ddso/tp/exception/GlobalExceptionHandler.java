@@ -8,9 +8,11 @@ import ar.edu.unsam.ddso.tp.model.exceptions.TagInUseException;
 import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -44,6 +46,18 @@ public class GlobalExceptionHandler {
                         .collect(Collectors.joining(", "));
         return ResponseEntity.badRequest()
                 .body(new ErrorResponseDTO(HttpStatus.BAD_REQUEST.value(), message));
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponseDTO> handleUnreadableBody(HttpMessageNotReadableException ex) {
+        return ResponseEntity.badRequest()
+                .body(new ErrorResponseDTO(HttpStatus.BAD_REQUEST.value(), "Malformed request body"));
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponseDTO> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        return ResponseEntity.badRequest()
+                .body(new ErrorResponseDTO(HttpStatus.BAD_REQUEST.value(), ex.getName() + ": invalid value"));
     }
 
     private ResponseEntity<ErrorResponseDTO> buildResponse(HttpStatus status, RuntimeException ex) {

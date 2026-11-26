@@ -21,6 +21,13 @@ fallan varios, se listan separados por coma:
 { "status": 400, "message": "name: must not be blank" }
 ```
 
+Otros pedidos mal formados también responden `400` con el mismo formato:
+
+| Caso | `message` |
+|---|---|
+| Body que no se puede leer (JSON mal formado, fecha que no es `yyyy-MM-dd`) | `Malformed request body` |
+| Parámetro de URL o de búsqueda con un tipo incorrecto (`/api/pieces/abc`, `dateFrom=03/05/1977`) | `id: invalid value`, `dateFrom: invalid value` |
+
 | Código | Significado |
 |---|---|
 | `200 OK` | Consulta o modificación exitosa |
@@ -204,7 +211,7 @@ nombre, sin distinguir mayúsculas de minúsculas (`Press` y `press` son el mism
 
 | Campo | Tipo | Obligatorio | Descripción |
 |---|---|---|---|
-| `name` | `String` | Sí | Nombre del tag |
+| `name` | `String` | Sí | Nombre del tag (hasta 255 caracteres) |
 
 ```json
 { "name": "Press" }
@@ -221,6 +228,7 @@ nombre, sin distinguir mayúsculas de minúsculas (`Press` y `press` son el mism
 | Código | Cuándo | Ejemplo |
 |---|---|---|
 | `400` | El nombre está vacío | `{ "status": 400, "message": "Tag name must not be empty" }` |
+| `400` | El nombre supera los 255 caracteres | `{ "status": 400, "message": "name: must have at most 255 characters" }` |
 | `409` | Ya existe un tag con ese nombre | `{ "status": 409, "message": "Tag already exists: Press" }` |
 
 ### `PUT /api/tags/{id}` — Renombrar un tag
@@ -250,6 +258,7 @@ Aplica las mismas reglas de nombre que la creación.
 | Código | Cuándo | Ejemplo |
 |---|---|---|
 | `400` | El nombre está vacío | `{ "status": 400, "message": "Tag name must not be empty" }` |
+| `400` | El nombre supera los 255 caracteres | `{ "status": 400, "message": "name: must have at most 255 characters" }` |
 | `404` | El tag no existe | `{ "status": 404, "message": "Tag not found: 99" }` |
 | `409` | Otro tag ya tiene ese nombre | `{ "status": 409, "message": "Tag already exists: Newspapers" }` |
 
@@ -361,7 +370,7 @@ GET /api/pieces/search?name=letter&dateFrom=1970-01-01&dateTo=1980-12-31&page=0&
 | Código | Cuándo | Ejemplo |
 |---|---|---|
 | `400` | `dateFrom` es posterior a `dateTo` | `{ "status": 400, "message": "Invalid date range: dateFrom 1990-01-01 is after dateTo 1980-01-01" }` |
-| `400` | Una fecha no tiene formato ISO (por ejemplo `03/05/1977`) | Respuesta de error estándar de Spring |
+| `400` | Una fecha no tiene formato ISO (por ejemplo `03/05/1977`) | `{ "status": 400, "message": "dateFrom: invalid value" }` |
 
 > **Pendiente:**
 > - Los caracteres `%` y `_` en `name` o `description` no se escapan y funcionan como comodines

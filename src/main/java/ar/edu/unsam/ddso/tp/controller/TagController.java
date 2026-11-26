@@ -3,6 +3,7 @@ package ar.edu.unsam.ddso.tp.controller;
 import ar.edu.unsam.ddso.tp.dto.TagRequestDTO;
 import ar.edu.unsam.ddso.tp.dto.TagResponseDTO;
 import ar.edu.unsam.ddso.tp.service.TagService;
+import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,13 +37,13 @@ public class TagController {
     }
 
     @PostMapping
-    public ResponseEntity<TagResponseDTO> create(@RequestBody TagRequestDTO request) {
+    public ResponseEntity<TagResponseDTO> create(@Valid @RequestBody TagRequestDTO request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(tagService.create(request));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<TagResponseDTO> rename(
-            @PathVariable Long id, @RequestBody TagRequestDTO request) {
+            @PathVariable Long id, @Valid @RequestBody TagRequestDTO request) {
         return ResponseEntity.ok(tagService.rename(id, request));
     }
 
