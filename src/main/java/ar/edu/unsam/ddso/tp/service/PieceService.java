@@ -5,13 +5,11 @@ import ar.edu.unsam.ddso.tp.dto.DigitizationResponseDTO;
 import ar.edu.unsam.ddso.tp.dto.PieceCreateRequestDTO;
 import ar.edu.unsam.ddso.tp.dto.PieceDetailResponseDTO;
 import ar.edu.unsam.ddso.tp.dto.PieceResponseDTO;
-import ar.edu.unsam.ddso.tp.dto.TagResponseDTO;
 import ar.edu.unsam.ddso.tp.exception.PieceNotFoundException;
 import ar.edu.unsam.ddso.tp.model.Digitization;
 import ar.edu.unsam.ddso.tp.model.Piece;
 import ar.edu.unsam.ddso.tp.repository.DigitizationRepository;
 import ar.edu.unsam.ddso.tp.repository.PieceRepository;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import org.springframework.stereotype.Service;
@@ -36,7 +34,7 @@ public class PieceService {
     Piece piece = pieceRepository.findById(id).orElseThrow(() -> new PieceNotFoundException(id));
     List<DigitizationResponseDTO> digitizations =
         digitizationRepository.findByPieceIdOrderByIdAsc(id).stream()
-            .map(this::toResponse)
+            .map(DigitizationMapper::toResponse)
             .toList();
     return new PieceDetailResponseDTO(
         piece.getId(), piece.getName(), piece.getDescription(), piece.getDate(), digitizations);
@@ -59,7 +57,7 @@ public class PieceService {
     Digitization digitization =
         new Digitization(null, request.url(), request.description(), piece, new HashSet<>());
     Digitization saved = digitizationRepository.save(digitization);
-    return toResponse(saved);
+    return DigitizationMapper.toResponse(saved);
   }
 
   // ---------- Private ----------
@@ -67,17 +65,5 @@ public class PieceService {
   private PieceResponseDTO toResponse(Piece piece) {
     return new PieceResponseDTO(
         piece.getId(), piece.getName(), piece.getDescription(), piece.getDate());
-  }
-
-  private DigitizationResponseDTO toResponse(Digitization digitization) {
-    return new DigitizationResponseDTO(
-        digitization.getId(),
-        digitization.getUrl(),
-        digitization.getDescription(),
-        digitization.getPiece().getId(),
-        digitization.getTags().stream()
-            .map(tag -> new TagResponseDTO(tag.getId(), tag.getName()))
-            .sorted(Comparator.comparing(TagResponseDTO::name))
-            .toList());
   }
 }

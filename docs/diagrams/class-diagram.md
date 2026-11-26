@@ -24,7 +24,10 @@ classDiagram
             +createPiece(PieceCreateRequestDTO request) PieceResponseDTO
             +addDigitization(Long pieceId, DigitizationCreateRequestDTO request) DigitizationResponseDTO
             -toResponse(Piece piece) PieceResponseDTO
-            -toResponse(Digitization digitization) DigitizationResponseDTO
+        }
+        class DigitizationMapper {
+            <<utility>>
+            +toResponse(Digitization digitization)$ DigitizationResponseDTO
         }
     }
 
@@ -123,6 +126,7 @@ classDiagram
     PieceController --> PieceService : uses
     PieceService --> PieceRepository : uses
     PieceService --> DigitizationRepository : uses
+    PieceService --> DigitizationMapper : maps with
     PieceRepository --|> JpaRepository : extends
     DigitizationRepository --|> JpaRepository : extends
 
@@ -146,7 +150,9 @@ classDiagram
 - **Controller → Service → Repository:** cada capa solo se comunica con la de abajo. El
   controller nunca accede directamente a los repositories.
 - **Las entidades no se exponen:** el service convierte `Piece` y `Digitization` en DTOs de
-  respuesta (`toResponse`), así la API nunca devuelve entidades JPA.
+  respuesta (`toResponse`), así la API nunca devuelve entidades JPA. El mapeo de `Digitization`
+  vive en un solo lugar, `DigitizationMapper` (capa service), que usan `PieceService` y
+  `DigitizationService`.
 - **Piece ↔ Digitization:** una digitalización siempre pertenece a una pieza (`@ManyToOne`,
   `piece_id` es obligatorio). Una pieza puede tener cero o muchas digitalizaciones.
 - **Digitization ↔ Tag:** relación muchos a muchos (`@ManyToMany`), guardada en la tabla
