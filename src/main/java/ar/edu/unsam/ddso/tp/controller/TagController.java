@@ -1,8 +1,10 @@
 package ar.edu.unsam.ddso.tp.controller;
 
+import ar.edu.unsam.ddso.tp.config.OpenApiConfig;
 import ar.edu.unsam.ddso.tp.dto.TagRequestDTO;
 import ar.edu.unsam.ddso.tp.dto.TagResponseDTO;
 import ar.edu.unsam.ddso.tp.service.TagService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/tags")
+@Tag(name = OpenApiConfig.CATALOGING)
 public class TagController {
 
     private final TagService tagService;

@@ -1,11 +1,13 @@
 package ar.edu.unsam.ddso.tp.controller;
 
+import ar.edu.unsam.ddso.tp.config.OpenApiConfig;
 import ar.edu.unsam.ddso.tp.dto.DigitizationCreateRequestDTO;
 import ar.edu.unsam.ddso.tp.dto.DigitizationResponseDTO;
 import ar.edu.unsam.ddso.tp.dto.PieceCreateRequestDTO;
 import ar.edu.unsam.ddso.tp.dto.PieceDetailResponseDTO;
 import ar.edu.unsam.ddso.tp.dto.PieceResponseDTO;
 import ar.edu.unsam.ddso.tp.service.PieceService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/pieces")
+@Tag(name = OpenApiConfig.DIGITIZATION)
 public class PieceController {
 
     private final PieceService pieceService;
