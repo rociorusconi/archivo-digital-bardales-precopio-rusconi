@@ -78,7 +78,8 @@ Filtrado de **piezas** por fecha, nombre, descripción y tags.
 - Devuelve piezas, no digitalizaciones.
 - Resultados paginados (se asume un volumen grande de piezas).
 - Criterios combinables y opcionales.
-- Pendiente de definir: tags con AND u OR, y fecha exacta o rango (ver `ARCHITECTURE.md`, sección 8).
+- Decidido (ver `ARCHITECTURE.md`, sección 8): tags con AND, rango de fechas inclusivo, 20
+  resultados por página por defecto y 50 como máximo.
 
 **#9 — Crear Controller para API de Búsqueda** · `RF-DISP-03`
 Endpoint REST de consulta.
@@ -107,7 +108,7 @@ Diagramas de componentes, paquetes y modelo de clases.
 Especificación de la API REST y secuencia de prueba del sistema.
 - `test.md` recorre: crear tag, crear pieza, crear digitalización, asignar tag y buscar.
 
-**#16 — Completar README** · `Documentación`
+**#19 — Completar README** · `Documentación`
 Nombre del equipo, integrantes con su usuario de GitHub y cómo levantar la aplicación.
 
 ## 4. Issues transversales
@@ -121,8 +122,37 @@ Excepciones de dominio (`model/exceptions`), excepciones de "no encontrado" (`ex
 **#15 — Datos semilla para perfil local** · `Transversal`
 `data.sql` con algunas piezas, digitalizaciones y tags para poder probar el recorrido completo.
 
+## 5. Issues agregados durante el desarrollo
 
-## 5. Requisitos de entrega a tener presentes
+Surgieron al implementar los anteriores. Los números saltean los que se usaron para pull requests
+y los issues duplicados (#16, #17 y #18).
+
+**#27 — Asignar tags a una digitalización** · `RF-CAT-01`
+`POST /api/digitizations/{id}/tags/{tagId}`: cataloga una digitalización con un tag existente, sin
+duplicarlo. Completa la parte de asignación de #6 y #7.
+
+**#28 — Consultar el detalle de una pieza** · `RF-DIG-01`
+`GET /api/pieces/{id}`: la pieza con sus digitalizaciones y los tags de cada una, en una sola
+consulta (sin N+1).
+
+**#29 — Validar los datos de entrada de las APIs** · `Transversal`
+Validaciones en los DTOs de request (`@NotBlank`, `@URL`, `@Size`) y respuesta `400` que indica el
+campo que falló.
+
+**#35 — Quitar un tag de una digitalización** · `RF-CAT-01`
+`DELETE /api/digitizations/{id}/tags/{tagId}`: corrige una catalogación hecha por error. Es
+necesario para poder eliminar un tag en uso.
+
+**#39 — Agregar Swagger UI** · `Documentación`
+Página para ver y probar los endpoints desde el navegador (`/swagger-ui.html`), agrupados por
+módulo. Complementa a `docs/api.md`.
+
+**#40 — Proceso batch para cargar piezas desde un CSV** · `RF-DIG-01`, `RF-CAT-01`
+Extra opcional de la consigna: carga en segundo plano de piezas, digitalizaciones y tags desde un
+CSV, con las mismas validaciones que la API y un reporte de las filas con error. Pendiente.
+
+
+## 6. Requisitos de entrega a tener presentes
 
 - Todos los integrantes necesitan al menos un commit que aporte al trabajo (no solo documentación).
 - Todos los integrantes necesitan un test unitario de un service y poder explicarlo. Con los
@@ -130,7 +160,7 @@ Excepciones de dominio (`model/exceptions`), excepciones de "no encontrado" (`ex
   búsqueda (#8) y la lógica de comandos del bot (#11). Conviene asignarlos de forma que cada
   persona quede con uno.
 
-## 6. Orden de trabajo sugerido
+## 7. Orden de trabajo sugerido
 
 | Etapa | Issues | Motivo |
 |---|---|---|
@@ -139,7 +169,7 @@ Excepciones de dominio (`model/exceptions`), excepciones de "no encontrado" (`ex
 | 3. APIs | #4, #7, #15 | Permite el primer recorrido de punta a punta por HTTP |
 | 4. Búsqueda | #8, #9 | Requiere piezas con digitalizaciones y tags cargados |
 | 5. Bot | #10, #11 | Consume el service de búsqueda |
-| 6. Documentación | #12, #13, #16 | Los diagramas y `test.md` se validan contra la app funcionando |
+| 6. Documentación | #12, #13, #19 | Los diagramas y `test.md` se validan contra la app funcionando |
 
 Los diagramas de clases y de base de datos de #12 pueden empezar antes (después de la etapa 1);
 `test.md` y los diagramas de secuencia conviene cerrarlos al final.

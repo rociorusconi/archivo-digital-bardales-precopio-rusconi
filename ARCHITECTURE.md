@@ -111,7 +111,7 @@ C4Container
     System_Ext(telegram, "Telegram", "Bot API")
 
     Container_Boundary(sistema, "Archivo Digital") {
-        Container(app, "Aplicación Archivo Digital", "Java 17, Spring Boot", "Monolito en capas: APIs REST de Digitalización, Catalogación y Disponibilización, más el bot de Telegram")
+        Container(app, "Aplicación Archivo Digital", "Java 21, Spring Boot", "Monolito en capas: APIs REST de Digitalización, Catalogación y Disponibilización, más el bot de Telegram")
         ContainerDb(db, "Base de datos", "H2 (JPA)", "Piezas, digitalizaciones y tags")
     }
 
@@ -180,8 +180,12 @@ Reglas de dominio identificadas:
 - **Issues y labels:** definidos en `Backlog.md` y cargados en GitHub Projects.
 
 ### Próximos pasos
-- Completar el README.
-- Diseñar los diagramas de base de datos y de secuencia.
+- Extra opcional: proceso batch para cargar piezas desde un CSV (#40).
+
+La documentación de `/docs` está completa: [`api.md`](docs/api.md), [`test.md`](docs/test.md),
+[`bot.md`](docs/bot.md) y los diagramas de [arquitectura](docs/diagrams/architecture-diagram.md),
+[clases](docs/diagrams/class-diagram.md), [base de datos](docs/diagrams/database-diagram.md) y de
+secuencia (`docs/diagrams/sequence-*.md`).
 
 ## 9. Referencias
 

@@ -241,3 +241,7 @@ buildNumber.properties
 .idea
 
 .env
+
+# Presentacion de la defensa (la seccion "Web" de arriba ignora *.html y *.js)
+!presentacion/
+!presentacion/**
