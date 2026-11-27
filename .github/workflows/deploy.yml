@@ -51,13 +51,13 @@ jobs:
       packages: read
     steps:
       - uses: actions/checkout@v4
-      - name: Copy docker-compose.yml to the VPS
+      - name: Copy docker-compose.yml and Caddyfile to the VPS
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          source: docker-compose.yml
+          source: docker-compose.yml,Caddyfile
           target: ~/archivo-digital
       - name: Pull the new image and restart
         uses: appleboy/ssh-action@v1.2.0

@@ -1,4 +1,4 @@
-# Production: the application and its PostgreSQL database.
+# Production: the application, its PostgreSQL database and Caddy (HTTPS in front of the app).
 # On the server: `docker compose pull && docker compose up -d` (the deploy workflow does it).
 # Locally, to build the image from the sources: `docker compose up --build`.
 # Values come from a .env file next to this one (see .env.example).
@@ -35,5 +35,20 @@ services:
     ports:
       - "${APP_PORT:-8080}:8080"
 
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      - app
+    environment:
+      DOMAIN: ${DOMAIN:-localhost}
+    ports:
+      - "${HTTP_PORT:-80}:80" # Let's Encrypt validates the domain through port 80
+      - "${HTTPS_PORT:-443}:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data # certificates: kept so they are not requested again on every deploy
+
 volumes:
   db-data:
+  caddy-data:

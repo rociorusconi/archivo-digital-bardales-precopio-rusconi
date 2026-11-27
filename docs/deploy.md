@@ -62,6 +62,17 @@ En el repo: *Settings → Secrets and variables → Actions*.
 Después de cada push a la rama `pre-prod`, la API queda en `http://<ip-del-vps>:8080`.
 (El botón *Actions → Deploy → Run workflow* aparece recién cuando `deploy.yml` está en `main`.)
 
+## Dominio y HTTPS (DuckDNS + Caddy)
+
+`docker-compose.yml` incluye **Caddy**, que atiende en los puertos 80 y 443 y le pasa los pedidos a la app.
+Saca y renueva solo el certificado HTTPS gratuito de Let's Encrypt.
+
+1. En [duckdns.org](https://www.duckdns.org) crear un subdominio y apuntarlo a la IP del VPS.
+2. En el firewall del VPS abrir TCP `80` y `443`.
+3. En el `.env` del servidor: `DOMAIN=<subdominio>.duckdns.org`.
+
+La API queda en `https://<subdominio>.duckdns.org/api/...`; `http://` redirige a `https://`.
+
 ## Probarlo en local con Docker
 
 ```bash
