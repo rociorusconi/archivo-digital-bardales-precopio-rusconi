@@ -21,6 +21,10 @@ src/test/java/ar/edu/unsam/ddso/tp/
 └── TpApplicationTests.java       # smoke test (contextLoads)
 ```
 
+## API
+
+Con la app levantada, Swagger UI en `http://localhost:8080/swagger-ui.html` permite ver y probar los endpoints desde el navegador. La especificación completa está en [`docs/api.md`](docs/api.md).
+
 ## Cómo correr los tests
 
 ```bash

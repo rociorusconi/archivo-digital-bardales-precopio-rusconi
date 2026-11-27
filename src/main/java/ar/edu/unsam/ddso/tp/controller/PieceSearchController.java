@@ -1,9 +1,11 @@
 package ar.edu.unsam.ddso.tp.controller;
 
+import ar.edu.unsam.ddso.tp.config.OpenApiConfig;
 import ar.edu.unsam.ddso.tp.dto.PageResponseDTO;
 import ar.edu.unsam.ddso.tp.dto.PieceResponseDTO;
 import ar.edu.unsam.ddso.tp.dto.PieceSearchRequestDTO;
 import ar.edu.unsam.ddso.tp.service.PieceSearchService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import java.time.LocalDate;
 import java.util.Set;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/pieces/search")
+@Tag(name = OpenApiConfig.AVAILABILITY)
 public class PieceSearchController {
 
     private final PieceSearchService pieceSearchService;

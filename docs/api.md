@@ -6,6 +6,7 @@ El bot de Telegram (Visualización) no es una API web: se documenta en [`bot.md`
 ## Información general
 
 - **URL base (perfil local):** `http://localhost:8080`
+- **Swagger UI:** [`http://localhost:8080/swagger-ui.html`](http://localhost:8080/swagger-ui.html), con la app levantada. Muestra los mismos endpoints agrupados por módulo (Digitalización, Catalogación, Disponibilización) y permite probarlos desde el navegador (**Try it out**). Se genera solo a partir de los controllers; este documento sigue siendo la especificación completa (reglas, ejemplos y errores).
 - **Formato:** todos los pedidos y respuestas usan JSON (`Content-Type: application/json`).
 - **Fechas:** formato ISO `yyyy-MM-dd` (por ejemplo `1977-05-03`).
 - **Errores:** los errores del dominio se devuelven con este formato, generado por
