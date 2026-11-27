@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Archivo Digital — Defensa TPI · LosCopiaPega</title>
+
+<!-- Fonts: Libre Caslon Display (títulos), Courier Prime (ficha / código), Archivo Narrow (etiquetas) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Archivo+Narrow:wght@500;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* ===========================================
+   CSS CUSTOM PROPERTIES (THEME)
+   Ficha catalográfica: cambiar estos valores cambia todo el deck.
+   =========================================== */
+:root {
+    --stage-bg: #111;
+    --desk: #2b2a26;
+    --card: #efe6cf;
+    --card-light: #f8f2e2;
+    --card-edge: #d9cba6;
+    --ink: #1d1b17;
+    --faded: #7a6f5a;
+    --rule-blue: #b7c7d4;
+    --red: #b3261e;
+    --red-soft: rgba(179, 38, 30, .10);
+    --given: rgba(45, 110, 160, .12);
+    --whenthen: rgba(179, 38, 30, .10);
+
+    --font-display: 'Libre Caslon Display', Georgia, serif;
+    --font-mono: 'Courier Prime', 'Courier New', monospace;
+    --font-label: 'Archivo Narrow', 'Arial Narrow', sans-serif;
+
+    --ease: cubic-bezier(.2, .8, .2, 1);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+/* ===========================================
+   FIXED 16:9 STAGE: MANDATORY BASE STYLES (viewport-base.css, completo)
+   =========================================== */
+html, body { width: 100%; height: 100%; margin: 0; overflow: hidden; background: var(--stage-bg, #000); }
+.deck-viewport { position: fixed; inset: 0; overflow: hidden; background: var(--stage-bg, #000); }
+.deck-stage { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; overflow: hidden; transform-origin: 0 0; background: var(--slide-bg, #fff); }
+.slide { position: absolute; inset: 0; width: 1920px; height: 1080px; overflow: hidden; display: block; visibility: hidden; opacity: 0; pointer-events: none; background: var(--slide-bg, #fff); }
+.slide.active, .slide.visible { visibility: visible; opacity: 1; pointer-events: auto; z-index: 1; }
+img, video, canvas, svg { max-width: 100%; max-height: 100%; }
+.deck-controls { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); z-index: 1000; }
+@media print {
+    html, body { width: 1920px; height: auto; overflow: visible; background: #fff; }
+    .deck-viewport { position: static; overflow: visible; background: #fff; }
+    .deck-stage { position: static; width: auto; height: auto; transform: none !important; background: none; }
+    .slide { position: relative; display: block !important; visibility: visible !important; opacity: 1 !important; pointer-events: auto !important; width: 1920px; height: 1080px; break-after: page; page-break-after: always; }
+    .slide:last-child { break-after: auto; page-break-after: auto; }
+    .deck-controls { display: none !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.2s !important; }
+}
+
+/* ===========================================
+   DESK + CARD STACK
+   Cada slide es una ficha apoyada sobre un escritorio, con dos fichas detrás.
+   =========================================== */
+.slide {
+    background: radial-gradient(ellipse at 30% 20%, #3a3832 0%, var(--desk) 55%, #1c1b18 100%);
+    font-family: var(--font-mono);
+    color: var(--ink);
+}
+.slide::before, .slide::after {
+    content: ""; position: absolute; width: 1700px; height: 940px; border-radius: 10px;
+    background: #d8ccad; box-shadow: 0 10px 30px rgba(0,0,0,.4);
+}
+.slide::before { left: 122px; top: 84px; transform: rotate(1.1deg); background: #cfc2a0; }
+.slide::after  { left: 100px; top: 78px; transform: rotate(-.5deg); background: #ddd1b3; }
+
+.card {
+    position: absolute; left: 110px; top: 70px; width: 1700px; height: 940px; z-index: 2;
+    background-color: var(--card);
+    background-image: repeating-linear-gradient(to bottom, transparent 0 59px, var(--rule-blue) 59px 60px);
+    background-position: 0 200px; background-repeat: repeat-y; background-size: 100% calc(100% - 200px);
+    border-radius: 10px;
+    box-shadow: 0 30px 70px rgba(0,0,0,.55), inset 0 0 0 1px var(--card-edge);
+}
+.card.plain { background-image: none; }
+/* red header rule */
+.card::before { content: ""; position: absolute; left: 0; right: 0; top: 196px; height: 3px; background: var(--red); }
+.card.cover::before { top: 250px; }
+
+/* index tab on the top edge (section divider) */
+.tab {
+    position: absolute; top: -44px; height: 56px; padding: 8px 28px 0; border-radius: 10px 10px 0 0;
+    background: var(--card); box-shadow: inset 0 1px 0 1px var(--card-edge);
+    font-family: var(--font-label); font-weight: 700; font-size: 24px; letter-spacing: .14em; text-transform: uppercase; color: var(--faded);
+}
+
+/* chrome row */
+.chrome {
+    position: absolute; left: 80px; right: 80px; top: 30px; display: flex; justify-content: space-between;
+    font-family: var(--font-label); font-weight: 700; font-size: 22px; letter-spacing: .16em; text-transform: uppercase; color: var(--faded);
+}
+.chrome b { color: var(--ink); }
+
+/* slide title */
+.title {
+    position: absolute; left: 76px; right: 80px; top: 78px;
+    font-family: var(--font-display); font-weight: 400; font-size: 84px; line-height: 1.05; letter-spacing: -.01em;
+}
+.title small { font-family: var(--font-mono); font-style: italic; font-size: 30px; color: var(--faded); margin-left: 24px; letter-spacing: 0; }
+
+/* content area below the red rule */
+.body { position: absolute; left: 80px; right: 80px; top: 232px; bottom: 60px; }
+
+/* ===========================================
+   COMPONENTS
+   =========================================== */
+.lbl { font-family: var(--font-label); font-weight: 700; font-size: 22px; letter-spacing: .14em; text-transform: uppercase; color: var(--faded); }
+.chip {
+    display: inline-block; font-family: var(--font-label); font-weight: 700; font-size: 24px; letter-spacing: .06em; text-transform: uppercase;
+    border: 2px solid var(--ink); border-radius: 6px; padding: 3px 14px; background: rgba(255,255,255,.4); white-space: nowrap; line-height: 1.3; vertical-align: middle;
+}
+.chip.red { border-color: var(--red); color: #fff; background: var(--red); }
+.chip.ghost { border-style: dashed; color: var(--faded); border-color: var(--faded); background: transparent; }
+code, .code-inline { font-family: var(--font-mono); font-weight: 700; background: rgba(29,27,23,.07); padding: 0 6px; border-radius: 3px; }
+
+/* "field: value" rows, aligned to the ruled lines (60px) */
+.fields { font-size: 32px; line-height: 60px; }
+.fields .row { display: flex; align-items: baseline; }
+.fields .k { flex: 0 0 300px; font-family: var(--font-label); font-weight: 700; font-size: 24px; letter-spacing: .1em; text-transform: uppercase; color: var(--faded); }
+
+/* visible placeholder for missing content */
+.pendiente {
+    border: 3px dashed var(--red); border-radius: 8px; padding: 22px 30px; background: var(--red-soft);
+    color: var(--red); font-family: var(--font-mono); font-weight: 700; font-size: 32px; line-height: 1.35;
+}
+
+/* rubber stamp */
+.stamp {
+    position: absolute; border: 7px solid var(--red); border-radius: 50%; color: var(--red);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+    font-family: var(--font-label); font-weight: 700; text-transform: uppercase; letter-spacing: .1em;
+    opacity: 0; transform: rotate(-14deg) scale(1.6); mix-blend-mode: multiply; z-index: 5;
+}
+.stamp::before { content: ""; position: absolute; inset: 12px; border: 2px solid var(--red); border-radius: 50%; }
+.slide.visible .stamp { animation: stamp .35s cubic-bezier(.5,1.8,.6,1) .9s forwards; }
+@keyframes stamp { to { opacity: .85; transform: rotate(-14deg) scale(1); } }
+
+/* attached diagram (paper sheet clipped to the card) */
+.sheet {
+    position: absolute; background: var(--card-light); border: 1px solid var(--card-edge); border-radius: 4px;
+    box-shadow: 0 6px 18px rgba(0,0,0,.18); padding: 18px 22px 40px; cursor: zoom-in;
+}
+.sheet .diagram { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+.sheet .diagram svg { width: 100%; height: 100%; max-width: 100% !important; }
+.sheet .src { position: absolute; left: 22px; bottom: 10px; font-size: 18px; color: var(--faded); }
+.sheet .hint { position: absolute; right: 22px; bottom: 10px; font-family: var(--font-label); font-size: 18px; letter-spacing: .1em; text-transform: uppercase; color: var(--faded); }
+.sheet::before { /* paper clip */
+    content: ""; position: absolute; top: -22px; left: 60px; width: 34px; height: 76px; border: 5px solid #8d8f93; border-radius: 18px; border-bottom-color: transparent; z-index: 3;
+}
+/* zoom mode: the sheet covers the whole card */
+.sheet.zoomed { position: absolute; left: 20px !important; top: 20px !important; width: 1660px !important; height: 900px !important; z-index: 40; cursor: zoom-out; box-shadow: 0 20px 60px rgba(0,0,0,.45); }
+.sheet { overflow: hidden; }
+.sheet.zoomed::before { display: none; }
+.sheet .src, .sheet .hint { z-index: 2; background: var(--card-light); padding: 0 6px; }
+.sheet .diagram svg { transition: transform .35s var(--ease); }
+.sheet.magnified { cursor: zoom-out; }
+.zoom-backdrop { display: none; position: absolute; inset: 0; background: rgba(239,230,207,.75); z-index: 39; border-radius: 10px; }
+.card.has-zoom .zoom-backdrop { display: block; }
+
+/* side notes next to diagrams */
+.notes-col { position: absolute; display: flex; flex-direction: column; gap: 26px; }
+.point code { font-size: .85em; }
+.point { font-size: 27px; line-height: 1.35; padding-left: 26px; border-left: 4px solid var(--ink); }
+.point > b:first-child { display: block; font-family: var(--font-label); font-weight: 700; font-size: 22px; letter-spacing: .12em; text-transform: uppercase; color: var(--red); margin-bottom: 4px; }
+
+/* layer stack (arquitectura) */
+.layer { display: flex; align-items: center; gap: 22px; border: 2px solid var(--ink); border-radius: 6px; padding: 14px 20px; background: var(--card-light); font-size: 24px; line-height: 1.3; }
+.layer .n { font-family: var(--font-label); font-weight: 700; font-size: 26px; letter-spacing: .06em; text-transform: uppercase; flex: 0 0 170px; }
+.arrow-down { text-align: center; font-size: 20px; line-height: 1; color: var(--faded); margin: 6px 0; }
+
+/* code block (tests) */
+.code {
+    background: #1f1d19; color: #ece3cc; border-radius: 8px; padding: 28px 0; font-family: var(--font-mono); font-size: 22px; line-height: 35px;
+    box-shadow: 0 10px 30px rgba(0,0,0,.25); white-space: pre; overflow: hidden; position: relative;
+}
+.code .ln { display: block; padding: 0 30px 0 140px; position: relative; }
+.code .blk-given { background: rgba(110,170,220,.16); }
+.code .blk-wt { background: rgba(230,90,80,.18); }
+.code .tagmark { position: absolute; left: 18px; font-family: var(--font-label); font-weight: 700; font-size: 18px; letter-spacing: .12em; text-transform: uppercase; }
+.code .blk-given .tagmark { color: #9cc6ea; }
+.code .blk-wt .tagmark { color: #f09a90; }
+.tk-an { color: #e6b450; } .tk-kw { color: #ff9f80; font-weight: 700; } .tk-str { color: #a9d18e; }
+.tk-cm { color: #9a917c; font-style: italic; } .tk-num { color: #f0c27b; } .tk-ty { color: #8cc4e6; } .tk-fn { color: #f4e6c4; font-weight: 700; }
+
+.pts4 { position: absolute; left: 80px; right: 80px; top: 752px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 30px; }
+.pts4.side { left: 1180px; right: 60px; top: 226px; grid-template-columns: 1fr; gap: 20px; }
+.pts4 .point { font-size: 22px; line-height: 1.32; padding-left: 18px; }
+.pts4 .point > b:first-child { font-size: 19px; }
+.explain { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 40px; }
+.explain .point { font-size: 25px; }
+
+/* tables (API, decisiones) */
+table.ledger { width: 100%; border-collapse: collapse; font-size: 25px; }
+table.ledger th { text-align: left; font-family: var(--font-label); font-weight: 700; font-size: 21px; letter-spacing: .12em; text-transform: uppercase; color: var(--faded); padding: 6px 14px; border-bottom: 3px solid var(--ink); }
+table.ledger td { padding: 8px 14px; height: 54px; line-height: 1.25; border-bottom: 1px solid var(--rule-blue); vertical-align: middle; }
+table.ledger tr.hl td { background: var(--red-soft); }
+table.ledger tr.hl td:first-child { box-shadow: inset 5px 0 0 var(--red); }
+table.ledger .mod { font-family: var(--font-label); font-weight: 700; font-size: 22px; letter-spacing: .08em; text-transform: uppercase; color: var(--faded); }
+.verb { display: inline-block; min-width: 92px; font-family: var(--font-label); font-weight: 700; font-size: 21px; letter-spacing: .06em; text-align: center; border-radius: 4px; padding: 1px 8px; color: #fff; }
+.m-get { background: #2f6f62; } .m-post { background: #8a5a2b; } .m-put { background: #4b5f8a; } .m-delete { background: var(--red); }
+
+/* mini cards (contexto) */
+.mini { background: var(--card-light); border: 2px solid var(--ink); border-radius: 8px; padding: 22px 24px; position: relative; }
+.mini .num { font-family: var(--font-display); font-size: 56px; line-height: 1; color: var(--red); }
+.mini h3 { font-family: var(--font-label); font-weight: 700; font-size: 28px; letter-spacing: .08em; text-transform: uppercase; margin: 6px 0 10px; }
+.mini p { font-size: 22px; line-height: 1.38; }
+
+/* flow rows (slide 6) */
+.flowrow { display: flex; align-items: center; gap: 16px; min-height: 92px; border-bottom: 1px solid var(--rule-blue); }
+.flowrow .mod { flex: 0 0 380px; font-family: var(--font-label); font-weight: 700; font-size: 26px; letter-spacing: .1em; text-transform: uppercase; }
+.flowrow .chip { font-size: 23px; }
+.flowrow .chip.red sup { font-size: 16px; margin-left: 6px; }
+
+/* pipeline (demo) */
+.pipe { display: flex; flex-wrap: wrap; align-items: center; gap: 14px 10px; }
+.pipe .arr { font-size: 30px; color: var(--faded); }
+
+/* speaker notes are hidden in the slide; shown in the notes panel (N) */
+aside.notes { display: none; }
+
+/* ===========================================
+   ANIMATIONS (triggered by .visible on the active slide)
+   =========================================== */
+.slide .card { transition: transform .7s var(--ease); transform: translateY(40px); }
+.slide.visible .card { transform: none; }
+.reveal { opacity: 0; transform: translateY(18px); transition: opacity .55s var(--ease), transform .55s var(--ease); }
+.slide.visible .reveal { opacity: 1; transform: none; }
+.slide.visible .d1 { transition-delay: .15s; } .slide.visible .d2 { transition-delay: .3s; }
+.slide.visible .d3 { transition-delay: .45s; } .slide.visible .d4 { transition-delay: .6s; }
+.slide.visible .d5 { transition-delay: .75s; } .slide.visible .d6 { transition-delay: .9s; }
+.caret { display: inline-block; width: .06em; height: .8em; background: var(--ink); margin-left: .08em; vertical-align: -.05em; animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+/* ===========================================
+   PRESENTER UI (outside the stage)
+   =========================================== */
+.progress { position: fixed; left: 0; bottom: 0; height: 4px; background: var(--red); z-index: 1000; transition: width .3s var(--ease); }
+.notes-panel {
+    position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%); width: min(900px, 92vw); z-index: 1001;
+    background: rgba(20,19,16,.94); color: #efe6cf; border: 1px solid #555; border-radius: 10px; padding: 16px 22px;
+    font: 16px/1.5 var(--font-mono); display: none;
+}
+.notes-panel.show { display: block; }
+.notes-panel .np-h { font: 700 12px var(--font-label); letter-spacing: .14em; text-transform: uppercase; color: #b9ab8b; margin-bottom: 6px; }
+.help-hint { position: fixed; right: 14px; bottom: 10px; z-index: 1000; font: 12px var(--font-label); letter-spacing: .08em; color: #777; }
+
+/* inline editing (E / hover top-left corner) */
+.edit-hotzone { position: fixed; top: 0; left: 0; width: 80px; height: 80px; z-index: 10000; cursor: pointer; }
+.edit-toggle {
+    position: fixed; top: 16px; left: 16px; z-index: 10001; opacity: 0; pointer-events: none; transition: opacity .3s ease;
+    font: 700 13px var(--font-label); letter-spacing: .1em; text-transform: uppercase; background: var(--card); color: var(--ink);
+    border: 2px solid var(--ink); border-radius: 6px; padding: 8px 12px; cursor: pointer;
+}
+.edit-toggle.show, .edit-toggle.active { opacity: 1; pointer-events: auto; }
+.edit-toggle.active { background: var(--red); color: #fff; border-color: var(--red); }
+body.editing [contenteditable="true"] { outline: 2px dashed rgba(179,38,30,.5); outline-offset: 4px; }
+</style>
+</head>
+<body>
+<div class="deck-viewport">
+<main class="deck-stage" id="deckStage">
+
+<!-- =====================================================
+     01 · PORTADA
+     ===================================================== -->
+<section class="slide" data-n="1">
+  <div class="card cover">
+    <div class="chrome reveal d1" style="top:44px">
+      <span>Fondo: <b>UNSAM — Diseño de Software</b><br>Serie: Trabajo Práctico Integrador</span>
+      <span style="text-align:right">Grupo<br><b style="font-family:var(--font-mono);font-size:44px;letter-spacing:0;text-transform:none">LosCopiaPega</b></span>
+    </div>
+    <h1 class="title reveal d1" style="top:122px;font-size:120px">Archivo Digital<span class="caret"></span></h1>
+    <div class="body" style="top:282px">
+      <div class="fields">
+        <div class="row reveal d2"><span class="k">Autores</span><span>Rocío Rusconi · Wilfredo Bardales · Kiara Precopio</span></div>
+        <div class="row reveal d3"><span class="k">Materia</span><span>UNSAM — Diseño de Software</span></div>
+        <div class="row reveal d3"><span class="k">Ubicación</span><span style="font-size:28px">github.com/rociorusconi/archivo-digital-bardales-precopio-rusconi</span></div>
+        <div class="row reveal d4"><span class="k">Tags</span><span style="display:inline-flex;gap:14px"><span class="chip">Digitalización</span><span class="chip">Catalogación</span><span class="chip">Disponibilización</span><span class="chip">Visualización</span></span></div>
+      </div>
+    </div>
+    <div class="stamp" style="right:120px;top:560px;width:290px;height:290px"><span style="font-size:26px">UNSAM</span><span style="font-size:48px;letter-spacing:.04em;line-height:1.05;margin:8px 0">Defensa<br>TPI</span><span style="font-size:20px">Diseño de Software</span></div>
+  </div>
+  <aside class="notes">Presenta: [a definir]</aside>
+</section>
+
+<!-- =====================================================
+     02 · CONTEXTO Y ALCANCE
+     ===================================================== -->
+<section class="slide" data-n="2">
+  <div class="card">
+    <div class="tab" style="left:80px">Contexto</div>
+    <div class="chrome"><span>UNSAM — Diseño de Software · TPI</span><span>Ficha 02 / 19</span></div>
+    <h2 class="title reveal d1">Del diseño a la implementación</h2>
+    <div class="body">
+      <p class="reveal d1" style="font-family:var(--font-display);font-size:38px;line-height:1.2;margin-bottom:22px">Una versión acotada del Archivo Digital de ISW, construida como monolito</p>
+      <p class="reveal d2" style="font-size:25px;line-height:1.5;max-width:1500px">En Ingeniería del Software I diseñamos la arquitectura del Archivo Digital de la Fundación Memoria Abierta. En Diseño de Software implementamos su proceso principal: un monolito en Java 21 y Spring Boot, con una única base de datos, organizado por dominio y en las capas de Fowler.</p>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin-top:30px">
+        <div class="mini reveal d3"><div class="num">01</div><h3>Digitalización</h3><p>Alta de piezas físicas y asociación de digitalizaciones (URL del recurso + descripción).</p></div>
+        <div class="mini reveal d4"><div class="num">02</div><h3>Catalogación</h3><p>Etiquetado de digitalizaciones con tags de un conjunto controlado, que un administrador puede cambiar en tiempo de ejecución.</p></div>
+        <div class="mini reveal d5"><div class="num">03</div><h3>Disponibilización</h3><p>Búsqueda de piezas por fecha, nombre, descripción y tags, pensada para un gran volumen de piezas.</p></div>
+        <div class="mini reveal d6"><div class="num">04</div><h3>Visualización</h3><p>Bot de Telegram para hacer búsquedas y ver los resultados.</p></div>
+      </div>
+      <p class="reveal d6" style="position:absolute;bottom:0;left:0;font-size:24px;color:var(--faded)"><span style="color:var(--red);font-weight:700">▸</span> Digitalización, Catalogación y Disponibilización se exponen como APIs REST, sin pantallas.</p>
+    </div>
+  </div>
+  <aside class="notes">Presenta: [a definir]</aside>
+</section>
+
+<!-- =====================================================
+     03 · ARQUITECTURA
+     ===================================================== -->
+<section class="slide" data-n="3">
+  <div class="card plain">
+    <div class="tab" style="left:300px">Arquitectura</div>
+    <div class="chrome"><span>UNSAM — Diseño de Software · TPI</span><span>Ficha 03 / 19</span></div>
+    <h2 class="title reveal d1">Arquitectura <small>monolito en capas</small></h2>
+    <div class="zoom-backdrop"></div>
+    <div class="sheet reveal d2" style="left:60px;top:220px;width:1040px;height:690px">
+      <div class="diagram" data-diagram="arch"></div>
+      <span class="src">docs/diagrams/architecture-diagram.md</span><span class="hint">clic: ampliar · 2º clic: lupa</span>
+    </div>
+    <div class="notes-col" style="left:1150px;top:236px;width:490px;gap:0">
+      <p class="reveal d2" style="font-size:25px;line-height:1.4;margin-bottom:26px">Monolito con <b>una sola base de datos</b>, módulos por dominio y capas:</p>
+      <div class="layer reveal d3"><span class="n">Controller</span><span>HTTP ↔ DTO, sin lógica</span></div>
+      <div class="arrow-down reveal d3">▼</div>
+      <div class="layer reveal d4"><span class="n">Service</span><span>orquesta, transacciona, mapea a DTO</span></div>
+      <div class="arrow-down reveal d4">▼</div>
+      <div class="layer reveal d5"><span class="n">Repository</span><span>acceso a datos (Spring Data JPA)</span></div>
+      <div class="arrow-down reveal d5">▼</div>
+      <div class="layer reveal d6"><span class="n">Entity</span><span>reglas de negocio del dominio</span></div>
+    </div>
+  </div>
+  <aside class="notes">Presenta: [a definir]<br>Una capa solo llama a la de abajo. El bot es un cliente más de la API: entra por HTTP a los controllers.</aside>
+</section>
+
+<!-- =====================================================
+     04 · MODELO DE DOMINIO
+     ===================================================== -->
+<section class="slide" data-n="4">
+  <div class="card plain">
+    <div class="tab" style="left:300px">Arquitectura</div>
+    <div class="chrome"><span>UNSAM — Diseño de Software · TPI</span><span>Ficha 04 / 19</span></div>
+    <h2 class="title reveal d1">Modelo de dominio <small>clases</small></h2>
+    <div class="zoom-backdrop"></div>
+    <div class="sheet reveal d2" style="left:60px;top:220px;width:1040px;height:690px">
+      <div class="diagram" data-diagram="domain"></div>
+      <span class="src">ARCHITECTURE.md · sección 7</span><span class="hint">clic: ampliar · 2º clic: lupa</span>
+    </div>
+    <div class="notes-col" style="left:1150px;top:250px;width:490px">
+      <div class="point reveal d3"><b>Piece 1 → N Digitization</b>Una digitalización siempre pertenece a una pieza.</div>
+      <div class="point reveal d4"><b>Digitization N ↔ N Tag</b>Solo se clasifica con tags que existan en el conjunto vigente.</div>
+      <div class="point reveal d5"><b>La búsqueda devuelve piezas</b>Una pieza coincide por tag si alguna de sus digitalizaciones lo tiene.</div>
+    </div>
+  </div>
+  <aside class="notes">Presenta: [a definir]<br>El diseño detallado por capas de cada módulo está en docs/diagrams/class-diagram.md.</aside>
+</section>
+
+<!-- =====================================================
+     05 · MODELO DE DATOS
+     ===================================================== -->
+<section class="slide" data-n="5">
+  <div class="card plain">
+    <div class="tab" style="left:300px">Arquitectura</div>
+    <div class="chrome"><span>UNSAM — Diseño de Software · TPI</span><span>Ficha 05 / 19</span></div>
+    <h2 class="title reveal d1">Modelo de datos <small>base de datos (H2)</small></h2>
+    <div class="zoom-backdrop"></div>
+    <div class="sheet reveal d2" style="left:60px;top:220px;width:1040px;height:690px">
+      <div class="diagram" data-diagram="db"></div>
+      <span class="src">docs/diagrams/database-diagram.md</span><span class="hint">clic: ampliar · 2º clic: lupa</span>
+    </div>
+    <div class="notes-col" style="left:1150px;top:250px;width:490px">
+      <div class="point reveal d3"><b>Tablas principales</b><code>pieces</code> · <code>digitizations</code> · <code>tags</code></div>
+      <div class="point reveal d4" style="border-color:var(--red)"><b>Tabla intermedia</b><code>digitization_tags</code> guarda la relación N↔N. Su clave compuesta impide que una digitalización tenga dos veces el mismo tag.</div>
+      <div class="point reveal d5"><b>Una sola base</b>Para todo el monolito. El esquema lo genera JPA a partir de las entidades.</div>
+    </div>
+  </div>
+  <aside class="notes">Presenta: [a definir]</aside>
+</section>
+
+<!-- =====================================================
+     06 · FLUJOS DEL SISTEMA
+     ===================================================== -->
+<section class="slide" data-n="6">
+  <div class="card">
+    <div class="tab" style="left:560px">Flujos</div>
+    <div class="chrome"><span>UNSAM — Diseño de Software · TPI</span><span>Ficha 06 / 19</span></div>
+    <h2 class="title reveal d1">Flujos del sistema</h2>
+    <div class="body">
+      <div class="flowrow reveal d1"><span class="mod">Catalogación · tags</span><span class="chip">Crear</span><span class="chip">Listar</span><span class="chip">Ver</span><span class="chip">Renombrar</span><span class="chip">Borrar <span style="text-transform:none;font-weight:500">(no si está en uso)</span></span></div>
+      <div class="flowrow reveal d2"><span class="mod">Digitalización</span><span class="chip">Crear pieza</span><span class="chip">Ver detalle de pieza</span><span class="chip">Agregar digitalización</span></div>
+      <div class="flowrow reveal d3"><span class="mod">Catalogación · asignar</span><span class="chip red">Asignar tag<sup>→ 08</sup></span><span class="chip">Quitar tag</span></div>
+      <div class="flowrow reveal d4"><span class="mod">Disponibilización</span><span class="chip">Buscar piezas <span style="text-transform:none;font-weight:500">(API)</span></span></div>
+      <div class="flowrow reveal d5"><span class="mod">Visualización · bot</span><span class="chip red">/buscar<sup>→ 07</sup></span><span class="chip">/pieza</span><span class="chip">/tags</span></div>
+      <p class="reveal d6" style="margin-top:34px;font-size:24px;color:var(--faded)"><span class="chip red" style="font-size:18px;padding:0 10px">→ 0X</span>&nbsp; se explica en detalle en la ficha indicada</p>
+    </div>
+  </div>
+  <aside class="notes">Presenta: [a definir]<br>Fuente: docs/api.md y los controllers (PieceController, TagController, DigitizationController, PieceSearchController) + comandos del bot (docs/test.md).</aside>
+</section>
+
+<!-- =====================================================
+     07 · BÚSQUEDA DESDE EL BOT
+     ===================================================== -->
+<section class="slide" data-n="7">
+  <div class="card plain">
+    <div class="tab" style="left:560px">Flujos</div>
+    <div class="chrome"><span>UNSAM — Diseño de Software · TPI</span><span>Ficha 07 / 19</span></div>
+    <h2 class="title reveal d1">Búsqueda de piezas <small>desde el bot</small></h2>
+    <div class="zoom-backdrop"></div>
+    <div class="sheet reveal d2" style="left:60px;top:214px;width:1580px;height:510px">
+      <div class="diagram" data-diagram="botsearch"></div>
+      <span class="src">docs/diagrams/sequence-bot-search.md</span><span class="hint">clic: ampliar · 2º clic: lupa</span>
+    </div>
+    <div class="pts4">
+      <div class="point reveal d3"><b>Misma API</b>El bot llama por HTTP a <code>PieceSearchController</code> → Service → Repository.</div>
+      <div class="point reveal d4"><b>Devuelve piezas</b>Una pieza tiene un tag si alguna de sus digitalizaciones lo tiene.</div>
+      <div class="point reveal d5"><b>Criterios con AND</b>Filtro nulo no restringe · sin distinguir mayúsculas · varios tags: todos.</div>
+      <div class="point reveal d6"><b>Gran volumen</b>Una sola consulta en la base, paginada: máx. 50 por página, por fecha desc. e id.</div>
+    </div>
+  </div>
+  <aside class="notes">Presenta: [a definir]<br>Fuente: PieceRepository.search (@Query con tagCount) y PieceSearchService (MAX_PAGE_SIZE = 50).</aside>
+</section>
+
+<!-- =====================================================
+     08 · ASIGNAR UN TAG
+     ===================================================== -->
+<section class="slide" data-n="8">
+  <div class="card plain">
+    <div class="tab" style="left:560px">Flujos</div>
+    <div class="chrome"><span>UNSAM — Diseño de Software · TPI</span><span>Ficha 08 / 19</span></div>
+    <h2 class="title reveal d1">Asignar un tag <small>a una digitalización</small></h2>
+    <div class="zoom-backdrop"></div>
+    <div class="sheet reveal d2" style="left:60px;top:214px;width:1080px;height:700px">
+      <div class="diagram" data-diagram="assign"></div>
+      <span class="src">docs/diagrams/sequence-assign-tag.md</span><span class="hint">clic: ampliar · 2º clic: lupa</span>
+    </div>
+    <div class="pts4 side">
+      <div class="point reveal d3"><b>¿Existe la digitalización?</b>Si no: <code>404</code><br><code>DigitizationNotFoundException</code></div>
+      <div class="point reveal d4"><b>¿Existe el tag?</b>Si no: <code>404</code> <code>TagNotFoundException</code>. Solo tags ya creados: conjunto controlado.</div>
+      <div class="point reveal d5"><b>Ya lo tenía</b>No se duplica ni da error. La regla vive en <code>Digitization.addTag</code>.</div>
+      <div class="point reveal d6" style="border-color:var(--red)"><b>Respuesta de error</b><span style="display:block;background:#1f1d19;color:#ece3cc;border-radius:6px;padding:10px 14px;font-size:19px;line-height:1.4;margin-top:4px">{ "status": 404,<br>&nbsp;&nbsp;"message": "Tag not found: 99" }</span></div>
+    </div>
+  </div>
+  <aside class="notes">Presenta: [a definir]<br>El error lo arma GlobalExceptionHandler como ErrorResponseDTO (status + mensaje). Si falla alguna validación no se guarda nada.</aside>
+</section>
+
+<!-- =====================================================
+     09 · API
+     ===================================================== -->
+<section class="slide" data-n="9">
+  <div class="card">
+    <div class="tab" style="left:780px">API</div>
+    <div class="chrome"><span>UNSAM — Diseño de Software · TPI</span><span>Ficha 09 / 19</span></div>
+    <h2 class="title reveal d1">API REST <small>docs/api.md</small></h2>
+    <div class="body" style="top:214px">
+      <table class="ledger reveal d2" style="font-size:23px">
+        <thead><tr><th style="width:260px">Módulo</th><th style="width:140px">Método</th><th style="width:590px">Ruta</th><th>Descripción</th></tr></thead>
+        <tbody>
+          <tr><td class="mod">Digitalización</td><td><span class="verb m-post">POST</span></td><td><code>/api/pieces</code></td><td>Crear una pieza</td></tr>
+          <tr><td class="mod"></td><td><span class="verb m-post">POST</span></td><td><code>/api/pieces/{id}/digitizations</code></td><td>Agregar una digitalización</td></tr>
+          <tr><td class="mod"></td><td><span class="verb m-get">GET</span></td><td><code>/api/pieces/{id}</code></td><td>Ver pieza con digitalizaciones y tags</td></tr>
+          <tr><td class="mod">Catalogación</td><td><span class="verb m-get">GET</span></td><td><code>/api/tags</code> · <code>/api/tags/{id}</code></td><td>Listar tags · ver un tag</td></tr>
+          <tr><td class="mod"></td><td><span class="verb m-post">POST</span></td><td><code>/api/tags</code></td><td>Crear un tag</td></tr>
+          <tr><td class="mod"></td><td><span class="verb m-put">PUT</span></td><td><code>/api/tags/{id}</code></td><td>Renombrar un tag</td></tr>
+          <tr><td class="mod"></td><td><span class="verb m-delete">DELETE</span></td><td><code>/api/tags/{id}</code></td><td>Eliminar un tag</td></tr>
+          <tr class="hl"><td class="mod"></td><td><span class="verb m-post">POST</span></td><td><code>/api/digitizations/{id}/tags/{tagId}</code></td><td>Asignar un tag <b style="color:var(--red)">→ 08</b></td></tr>
+          <tr><td class="mod"></td><td><span class="verb m-delete">DELETE</span></td><td><code>/api/digitizations/{id}/tags/{tagId}</code></td><td>Quitar un tag</td></tr>
+          <tr class="hl"><td class="mod">Disponibilización</td><td><span class="verb m-get">GET</span></td><td><code>/api/pieces/search</code></td><td>Buscar con filtros y paginación <b style="color:var(--red)">→ 07</b></td></tr>
+        </tbody>
+      </table>
+      <p class="reveal d3" style="position:absolute;bottom:0;left:0;font-size:23px;color:var(--faded)">Errores: <code>{ status, message }</code> · 400 / 404 / 409 &nbsp;·&nbsp; Para probarla: Swagger UI en <code>/swagger-ui.html</code></p>
+    </div>
+  </div>
+  <aside class="notes">Presenta: [a definir]</aside>
+</section>
+
+<!-- =====================================================
+     10 · DEMO
+     ===================================================== -->
+<section class="slide" data-n="10">
+  <div class="card cover">
+    <div class="tab" style="left:1000px">Demo</div>
+    <div class="chrome" style="top:44px"><span>UNSAM — Diseño de Software · TPI</span><span>Ficha 10 / 19</span></div>
+    <h2 class="title reveal d1" style="top:118px;font-size:130px">Pasamos a la demo<span class="caret"></span></h2>
+    <div class="body" style="top:300px">
+      <p class="lbl reveal d2" style="margin-bottom:22px">Secuencia de docs/test.md</p>
+      <div class="pipe reveal d3" style="max-width:1200px">
+        <span class="chip">Crear tag</span><span class="arr">→</span>
+        <span class="chip">Crear pieza</span><span class="arr">→</span>
+        <span class="chip">Agregar digitalización</span><span class="arr">→</span>
+        <span class="chip">Etiquetar</span><span class="arr">→</span>
+        <span class="chip">Ver detalle</span><span class="arr">→</span>
+        <span class="chip">Buscar por API</span><span class="arr">→</span>
+        <span class="chip red">Buscar desde el bot</span>
+      </div>
+      <p class="reveal d4" style="margin-top:34px;font-size:26px;color:var(--faded)">+ casos de error</p>
+    </div>
+    <div class="stamp" style="right:130px;top:520px;width:280px;height:280px"><span style="font-size:24px">Archivo Digital</span><span style="font-size:54px;letter-spacing:.04em;line-height:1.05;margin:8px 0">En vivo</span><span style="font-size:20px">Swagger · Telegram</span></div>
+  </div>
+  <aside class="notes">Presenta: [a definir]<br>Levantar con ./mvnw spring-boot:run (perfil local). Los ids de test.md arrancan en 7 (tags y piezas) y 9 (digitalizaciones) por los datos semilla.</aside>
+</section>
+
+<!-- =====================================================
+     11 · QUÉ HICE — ROCÍO
+     ===================================================== -->
+<section class="slide" data-n="11">
+  <div class="card">
+    <div class="tab" style="left:1180px">Equipo</div>
+    <div class="chrome"><span>UNSAM — Diseño de Software · TPI</span><span>Ficha 11 / 19</span></div>
+    <h2 class="title reveal d1">Qué hice <small>Rocío Rusconi</small></h2>
+    <div class="body">
+      <div class="fields">
+        <div class="row reveal d2"><span class="k">Integrante</span><span>Rocío Rusconi</span></div>
+        <div class="row reveal d3"><span class="k">Referencia</span><span style="display:inline-flex;gap:14px"><span class="chip">Digitalización · #1 a #4</span><span class="chip">Global Exception Handler · #14</span></span></div>
+      </div>
+      <div class="pendiente reveal d4" style="margin-top:50px">[PENDIENTE: issues, módulo y commits principales]</div>
+    </div>
+  </div>
+  <aside class="notes">Presenta: [a definir]</aside>
+</section>
+
+<!-- =====================================================
+     12 · MI TEST — ROCÍO
+     ===================================================== -->
+<section class="slide" data-n="12">
+  <div class="card plain">
+    <div class="tab" style="left:1180px">Equipo</div>
+    <div class="chrome"><span>UNSAM — Diseño de Software · TPI</span><span>Ficha 12 / 19</span></div>
+    <h2 class="title reveal d1">Mi test <small>Rocío Rusconi · PieceServiceTest</small></h2>
+    <div class="body" style="top:226px">
+<div class="code reveal d2"><span class="ln"><span class="tk-an">@Test</span></span><span class="ln"><span class="tk-kw">void</span> <span class="tk-fn">addDigitizationToMissingPieceThrowsPieceNotFoundException</span>() {</span><span class="ln blk-given"><span class="tagmark">Given</span>  <span class="tk-cm">// Given</span></span><span class="ln blk-given">  <span class="tk-ty">DigitizationCreateRequestDTO</span> request =</span><span class="ln blk-given">      <span class="tk-kw">new</span> <span class="tk-ty">DigitizationCreateRequestDTO</span>(<span class="tk-str">"https://files.example/letter-p1.pdf"</span>, <span class="tk-str">"Scan of page 1"</span>);</span><span class="ln blk-given">  <span class="tk-fn">when</span>(pieceRepository.findById(<span class="tk-num">99L</span>)).thenReturn(<span class="tk-ty">Optional</span>.empty());</span><span class="ln"> </span><span class="ln blk-wt"><span class="tagmark">When/Then</span>  <span class="tk-cm">// When / Then</span></span><span class="ln blk-wt">  <span class="tk-fn">assertThrows</span>(<span class="tk-ty">PieceNotFoundException</span>.<span class="tk-kw">class</span>, () -&gt; pieceService.addDigitization(<span class="tk-num">99L</span>, request));</span><span class="ln blk-wt">  <span class="tk-fn">verify</span>(digitizationRepository, <span class="tk-fn">never</span>()).save(<span class="tk-fn">any</span>(<span class="tk-ty">Digitization</span>.<span class="tk-kw">class</span>));</span><span class="ln">}</span></div>
+      <div class="explain" style="margin-top:34px">
+        <div class="point reveal d3"><b>Qué se mockea</b><code>PieceRepository</code>: <code>findById(99)</code> devuelve vacío. También <code>DigitizationRepository</code>.</div>
+        <div class="point reveal d4"><b>Qué se verifica</b>Que lance <code>PieceNotFoundException</code> y que <b>nunca</b> se llame a <code>save</code>.</div>
+        <div class="point reveal d5"><b>Por qué</b>Nunca puede quedar una digitalización sin pieza: el service corta antes de guardar.</div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Presenta: [a definir]<br>Sin contexto de Spring: @ExtendWith(MockitoExtension.class), @Mock en los repositorios y el service se instancia a mano en @BeforeEach.</aside>
+</section>
+
+<!-- =====================================================
+     13 · QUÉ HIZO — KIARA
+     ===================================================== -->
+<section class="slide" data-n="13">
+  <div class="card">
+    <div class="tab" style="left:1180px">Equipo</div>
+    <div class="chrome"><span>UNSAM — Diseño de Software · TPI</span><span>Ficha 13 / 19</span></div>
+    <h2 class="title reveal d1">Qué hizo <small>Kiara Precopio</small></h2>
+    <div class="body">
+      <div class="fields">
+        <div class="row reveal d2"><span class="k">Integrante</span><span>Kiara Precopio</span></div>
+      </div>
+      <div class="pendiente reveal d3" style="margin-top:50px">[PENDIENTE: issues, módulo y commits principales]</div>
+    </div>
+  </div>
+  <aside class="notes">Presenta: [a definir]</aside>
+</section>
+
+<!-- =====================================================
+     14 · SU TEST — KIARA
+     ===================================================== -->
+<section class="slide" data-n="14">
+  <div class="card plain">
+    <div class="tab" style="left:1180px">Equipo</div>
+    <div class="chrome"><span>UNSAM — Diseño de Software · TPI</span><span>Ficha 14 / 19</span></div>
+    <h2 class="title reveal d1">Su test <small>Kiara Precopio · DigitizationServiceTest</small></h2>
+    <div class="body" style="top:226px">
+<div class="code reveal d2"><span class="ln"><span class="tk-an">@Test</span></span><span class="ln"><span class="tk-kw">void</span> <span class="tk-fn">addMissingTagThrowsNotFoundAndDoesNotSave</span>() {</span><span class="ln blk-given"><span class="tagmark">Given</span>    <span class="tk-cm">// Given</span></span><span class="ln blk-given">    <span class="tk-fn">when</span>(digitizationRepository.findById(<span class="tk-num">10L</span>)).thenReturn(<span class="tk-ty">Optional</span>.of(digitization));</span><span class="ln blk-given">    <span class="tk-fn">when</span>(tagRepository.findById(<span class="tk-num">99L</span>)).thenReturn(<span class="tk-ty">Optional</span>.empty());</span><span class="ln"> </span><span class="ln blk-wt"><span class="tagmark">When/Then</span>    <span class="tk-cm">// When / Then</span></span><span class="ln blk-wt">    <span class="tk-fn">assertThrows</span>(<span class="tk-ty">TagNotFoundException</span>.<span class="tk-kw">class</span>, () -&gt; digitizationService.addTag(<span class="tk-num">10L</span>, <span class="tk-num">99L</span>));</span><span class="ln blk-wt">    <span class="tk-fn">verify</span>(digitizationRepository, <span class="tk-fn">never</span>()).save(<span class="tk-fn">any</span>(<span class="tk-ty">Digitization</span>.<span class="tk-kw">class</span>));</span><span class="ln">}</span></div>
+      <div class="explain" style="margin-top:34px">
+        <div class="point reveal d3"><b>Qué se mockea</b><code>DigitizationRepository</code> devuelve la digitalización 10. <code>TagRepository</code>: el tag 99 no existe.</div>
+        <div class="point reveal d4"><b>Qué se verifica</b>Que lance <code>TagNotFoundException</code> y que <b>no</b> se guarde la digitalización.</div>
+        <div class="point reveal d5"><b>Por qué</b>Solo se asignan tags del conjunto vigente: un tag inexistente no se crea al asignarlo (ficha 08).</div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Presenta: [a definir]<br>La digitalización 10 se arma en @BeforeEach, asociada a una pieza y sin tags.</aside>
+</section>
+
+<!-- =====================================================
+     15 · QUÉ HIZO — WILFREDO
+     ===================================================== -->
+<section class="slide" data-n="15">
+  <div class="card">
+    <div class="tab" style="left:1180px">Equipo</div>
+    <div class="chrome"><span>UNSAM — Diseño de Software · TPI</span><span>Ficha 15 / 19</span></div>
+    <h2 class="title reveal d1">Qué hizo <small>Wilfredo Bardales</small></h2>
+    <div class="body">
+      <div class="fields">
+        <div class="row reveal d2"><span class="k">Integrante</span><span>Wilfredo Bardales</span></div>
+        <div class="row reveal d3"><span class="k">Referencia</span><span><span class="chip">Catalogación · #5 a #7</span></span></div>
+      </div>
+      <div class="pendiente reveal d4" style="margin-top:50px">[PENDIENTE: issues, módulo y commits principales]</div>
+    </div>
+  </div>
+  <aside class="notes">Presenta: [a definir]</aside>
+</section>
+
+<!-- =====================================================
+     16 · SU TEST — WILFREDO
+     ===================================================== -->
+<section class="slide" data-n="16">
+  <div class="card plain">
+    <div class="tab" style="left:1180px">Equipo</div>
+    <div class="chrome"><span>UNSAM — Diseño de Software · TPI</span><span>Ficha 16 / 19</span></div>
+    <h2 class="title reveal d1">Su test <small>Wilfredo Bardales · TagServiceTest</small></h2>
+    <div class="body" style="top:226px">
+<div class="code reveal d2"><span class="ln"><span class="tk-an">@Test</span></span><span class="ln"><span class="tk-kw">void</span> <span class="tk-fn">deleteTagAssignedToADigitizationFailsAndDoesNotDelete</span>() {</span><span class="ln blk-given"><span class="tagmark">Given</span>    <span class="tk-cm">// Given</span></span><span class="ln blk-given">    <span class="tk-fn">when</span>(tagRepository.findById(<span class="tk-num">1L</span>)).thenReturn(<span class="tk-ty">Optional</span>.of(<span class="tk-kw">new</span> <span class="tk-ty">Tag</span>(<span class="tk-num">1L</span>, <span class="tk-str">"photo"</span>)));</span><span class="ln blk-given">    <span class="tk-fn">when</span>(digitizationRepository.existsByTagsId(<span class="tk-num">1L</span>)).thenReturn(<span class="tk-kw">true</span>);</span><span class="ln"> </span><span class="ln blk-wt"><span class="tagmark">When/Then</span>    <span class="tk-cm">// When / Then</span></span><span class="ln blk-wt">    <span class="tk-fn">assertThrows</span>(<span class="tk-ty">TagInUseException</span>.<span class="tk-kw">class</span>, () -&gt; tagService.delete(<span class="tk-num">1L</span>));</span><span class="ln blk-wt">    <span class="tk-fn">verify</span>(tagRepository, <span class="tk-fn">never</span>()).delete(<span class="tk-fn">any</span>(<span class="tk-ty">Tag</span>.<span class="tk-kw">class</span>));</span><span class="ln">}</span></div>
+      <div class="explain" style="margin-top:34px">
+        <div class="point reveal d3"><b>Qué se mockea</b><code>TagRepository</code> devuelve el tag 1. <code>DigitizationRepository.existsByTagsId(1)</code> responde que está en uso.</div>
+        <div class="point reveal d4"><b>Qué se verifica</b>Que lance <code>TagInUseException</code> y que <b>nunca</b> se llame a <code>delete</code>.</div>
+        <div class="point reveal d5"><b>Por qué</b>Un tag asignado no se puede borrar: la API responde <code>409</code> en vez de dejar digitalizaciones con un tag inexistente.</div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Presenta: [a definir]</aside>
+</section>
+
+<!-- =====================================================
+     17 · CÓMO TRABAJAMOS
+     ===================================================== -->
+<section class="slide" data-n="17">
+  <div class="card">
+    <div class="tab" style="left:1180px">Equipo</div>
+    <div class="chrome"><span>UNSAM — Diseño de Software · TPI</span><span>Ficha 17 / 19</span></div>
+    <h2 class="title reveal d1">Cómo trabajamos</h2>
+    <div class="body">
+      <div class="fields">
+        <div class="row reveal d2"><span class="k">Tablero</span><span>GitHub Projects: una columna por módulo + Documentación</span></div>
+        <div class="row reveal d3"><span class="k">Trazabilidad</span><span>Issues con labels de requerimiento funcional</span></div>
+        <div class="row reveal d3"><span class="k"></span><span style="display:inline-flex;gap:14px"><span class="chip">RF-DIG-01</span><span class="chip">RF-CAT-01</span><span class="chip">RF-DISP-03</span><span class="chip">RF-VIS-01</span></span></div>
+        <div class="row reveal d4"><span class="k">Ramas</span><span style="display:inline-flex;gap:12px;align-items:center"><span class="chip">feature/*</span><span style="font-size:24px;color:var(--faded)">— Pull Request →</span><span class="chip red">develop</span><span style="font-size:24px;color:var(--faded)">→</span><span class="chip ghost">pre-prod</span></span></div>
+        <div class="row reveal d5"><span class="k">Aporte</span><span style="font-size:28px">Cada integrante aportó código y al menos un test unitario de service</span></div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Presenta: [a definir]</aside>
+</section>
+
+<!-- =====================================================
+     18 · DECISIONES, TRADE-OFFS Y MEJORAS
+     ===================================================== -->
+<section class="slide" data-n="18">
+  <div class="card">
+    <div class="tab" style="left:1400px">Cierre</div>
+    <div class="chrome"><span>UNSAM — Diseño de Software · TPI</span><span>Ficha 18 / 19</span></div>
+    <h2 class="title reveal d1">Decisiones y trade-offs</h2>
+    <div class="body" style="top:214px">
+      <table class="ledger reveal d2" style="font-size:22px">
+        <thead><tr><th style="width:440px">Decisión</th><th style="width:540px">Por qué</th><th>Trade-off</th></tr></thead>
+        <tbody>
+          <tr><td><b>Monolito con una sola base</b></td><td>Simplicidad de desarrollo y despliegue</td><td>No escala cada módulo por separado</td></tr>
+          <tr><td><b>Tags de un conjunto controlado</b></td><td>Catalogación consistente</td><td>Menos flexible que los tags libres</td></tr>
+          <tr><td><b>Búsqueda sobre piezas</b></td><td>Es lo que busca el usuario</td><td>Cruzar piezas con los tags de sus digitalizaciones</td></tr>
+          <tr><td><b>Búsqueda paginada (máx. 50)</b></td><td>Protege la base ante un gran volumen</td><td>El cliente pide varias páginas</td></tr>
+          <tr><td><b>No borrar un tag en uso</b></td><td>Integridad de la catalogación</td><td>Hay que quitarlo antes de borrarlo</td></tr>
+        </tbody>
+      </table>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:34px">
+        <div class="reveal d3"><p class="lbl" style="margin-bottom:12px">Mejoras posibles</p><div class="pendiente" style="font-size:24px;padding:14px 20px">[sumar las que defina el grupo]</div></div>
+        <div class="reveal d4"><p class="lbl" style="margin-bottom:12px">Extras de la consigna</p><div style="display:flex;flex-wrap:wrap;gap:12px"><span class="chip ghost">Render + Postgres</span><span class="chip ghost">Carga batch por CSV</span><span class="chip ghost">Etiquetado con OCR</span></div></div>
+      </div>
+    </div>
+  </div>
+  <aside class="notes">Presenta: [a definir]<br>Propuesta para revisar con el grupo.</aside>
+</section>
+
+<!-- =====================================================
+     19 · CIERRE
+     ===================================================== -->
+<section class="slide" data-n="19">
+  <div class="card cover">
+    <div class="tab" style="left:1400px">Cierre</div>
+    <div class="chrome" style="top:44px">
+      <span>Fondo: <b>UNSAM — Diseño de Software</b><br>Serie: Trabajo Práctico Integrador</span>
+      <span>Ficha 19 / 19</span>
+    </div>
+    <h2 class="title reveal d1" style="top:118px;font-size:150px">¡Gracias!<span class="caret"></span></h2>
+    <div class="body" style="top:282px">
+      <div class="fields">
+        <div class="row reveal d2"><span class="k">Grupo</span><span style="font-weight:700">LosCopiaPega</span></div>
+        <div class="row reveal d3"><span class="k">Autores</span><span>Rocío Rusconi · Wilfredo Bardales · Kiara Precopio</span></div>
+        <div class="row reveal d4"><span class="k">Ubicación</span><span style="font-size:28px">github.com/rociorusconi/archivo-digital-bardales-precopio-rusconi</span></div>
+      </div>
+    </div>
+    <div class="stamp" style="right:130px;top:540px;width:290px;height:290px"><span style="font-size:26px">UNSAM</span><span style="font-size:46px;letter-spacing:.04em;line-height:1.05;margin:8px 0">Archivado</span><span style="font-size:20px">LosCopiaPega</span></div>
+  </div>
+  <aside class="notes">Presenta: [a definir]</aside>
+</section>
+
+</main>
+</div>
+
+<!-- Presenter UI: outside the 16:9 stage -->
+<div class="progress" id="progress"></div>
+<div class="notes-panel" id="notesPanel"><div class="np-h" id="npHead">Notas</div><div id="npBody"></div></div>
+<div class="help-hint">← → navegar · N notas · clic en diagrama para ampliar · E editar</div>
+<div class="edit-hotzone"></div>
+<button class="edit-toggle" id="editToggle" title="Modo edición (E)">Editar · Ctrl+S guarda</button>
+
+<!-- ===========================================
+     MERMAID SOURCES
+     Copiados tal cual de los .md de /docs (no editar a mano: si cambia el diagrama en docs,
+     volver a copiar el bloque).
+     =========================================== -->
+<script type="text/plain" id="src-arch">
+flowchart TB
+    operador(["Operador / Catalogador / Administrador"])
+    usuario(["Usuario final"])
+    telegram["Telegram<br/>(Bot API)"]
+
+    subgraph app["Aplicación Archivo Digital (Spring Boot)"]
+        direction TB
+
+        subgraph bot["bot · Visualización"]
+            TB["TelegramBot<br/>(adapter)"]
+            TWC["TelegramWebhookController"]
+            BCH["BotCommandHandler"]
+            AAC["ArchiveApiClient"]
+        end
+
+        subgraph controller["controller"]
+            PC["PieceController"]
+            TC["TagController"]
+            DC["DigitizationController"]
+            PSC["PieceSearchController"]
+        end
+
+        GEH["GlobalExceptionHandler<br/>(exception)"]
+
+        subgraph service["service"]
+            PS["PieceService"]
+            TS["TagService"]
+            DS["DigitizationService"]
+            PSS["PieceSearchService"]
+        end
+
+        subgraph repository["repository"]
+            PR["PieceRepository"]
+            DR["DigitizationRepository"]
+            TR["TagRepository"]
+        end
+
+        subgraph model["model"]
+            ENT["Piece · Digitization · Tag<br/>PieceSearchCriteria"]
+        end
+    end
+
+    db[("H2<br/>(JPA)")]
+
+    operador -- "HTTP/JSON" --> controller
+    usuario --> telegram
+    TB -- "long polling (local)" --> telegram
+    telegram -- "webhook (servidor)" --> TWC
+    TWC --> TB
+    TB --> BCH
+    BCH --> AAC
+    AAC -- "HTTP/JSON" --> controller
+
+    PC --> PS
+    TC --> TS
+    DC --> DS
+    PSC --> PSS
+    controller -. "excepciones" .-> GEH
+
+    PS --> PR
+    PS --> DR
+    TS --> TR
+    TS --> DR
+    DS --> DR
+    DS --> TR
+    PSS --> PR
+
+    service --> model
+    repository --> db
+</script>
+<script type="text/plain" id="src-domain">
+classDiagram
+    class Piece {
+        Long id
+        String name
+        String description
+        LocalDate date
+    }
+    class Digitization {
+        Long id
+        String url
+        String description
+    }
+    class Tag {
+        Long id
+        String name
+    }
+
+    Piece "1" --> "0..*" Digitization : tiene
+    Digitization "0..*" --> "0..*" Tag : clasificada con
+</script>
+<script type="text/plain" id="src-db">
+erDiagram
+    pieces {
+        bigint id PK "identity"
+        varchar(255) name "not null"
+        varchar(1000) description
+        date date
+    }
+    digitizations {
+        bigint id PK "identity"
+        varchar(255) url "not null"
+        varchar(1000) description
+        bigint piece_id FK "not null"
+    }
+    tags {
+        bigint id PK "identity"
+        varchar(255) name "not null, unique"
+    }
+    digitization_tags {
+        bigint digitization_id PK, FK
+        bigint tag_id PK, FK
+    }
+
+    pieces ||--o{ digitizations : "tiene"
+    digitizations ||--o{ digitization_tags : "clasificada con"
+    tags ||--o{ digitization_tags : "asignado en"
+</script>
+<script type="text/plain" id="src-botsearch">
+sequenceDiagram
+    autonumber
+    actor User as Usuario final
+    participant TG as Telegram (Bot API)
+    box Bot (cliente de la API)
+        participant TB as TelegramBot (adapter)
+        participant BCH as BotCommandHandler
+        participant AAC as ArchiveApiClient
+    end
+    box Controller layer
+        participant PSC as PieceSearchController
+    end
+    box Service layer
+        participant PSS as PieceSearchService
+    end
+    box Repository layer
+        participant PR as PieceRepository
+    end
+    participant DB as H2 Database
+
+    User->>TG: /buscar carta tag: prensa
+    TB->>TG: getUpdates (long polling)
+    TG-->>TB: Update con el mensaje
+    TB->>BCH: handle("/buscar carta tag: prensa")
+    BCH->>BCH: parseFilters → name "carta", tags {prensa}, página 1
+    BCH->>AAC: searchPieces(PieceSearchRequestDTO, page 0, size 10)
+    AAC->>PSC: HTTP GET /api/pieces/search?name=carta&tags=prensa&page=0&size=10
+    PSC->>PSS: search(PieceSearchRequestDTO, 0, 10)
+    PSS->>PSS: new PieceSearchCriteria(...) (valida el rango de fechas)
+    PSS->>PR: search(..., Pageable)
+    PR->>DB: SELECT ... LIMIT 10 + SELECT COUNT(*)
+    DB-->>PR: piezas de la página + total
+    PR-->>PSS: Page<Piece>
+    PSS-->>PSC: PageResponseDTO<PieceResponseDTO>
+    PSC-->>AAC: 200 OK (JSON)
+    AAC-->>BCH: PageResponseDTO<PieceResponseDTO>
+    BCH->>BCH: formatResults → texto
+    BCH-->>TB: texto de la respuesta
+    TB->>TG: sendMessage(chatId, texto)
+    TG-->>User: "Encontré 1 pieza(s): #1 · Carta desde Cordoba ..."
+</script>
+<script type="text/plain" id="src-assign">
+sequenceDiagram
+    autonumber
+    actor Client
+    box Controller layer
+        participant DC as DigitizationController
+        participant GEH as GlobalExceptionHandler
+    end
+    box Service layer
+        participant DS as DigitizationService
+    end
+    box Model layer
+        participant D as Digitization
+    end
+    box Repository layer
+        participant DR as DigitizationRepository
+        participant TR as TagRepository
+    end
+    participant DB as H2 Database
+
+    Client->>DC: POST /api/digitizations/{id}/tags/{tagId}
+    DC->>DS: addTag(id, tagId)
+    DS->>DR: findById(id)
+    DR->>DB: SELECT FROM digitizations WHERE id = ?
+    DB-->>DR: row / no row
+    DR-->>DS: Optional (Digitization or empty)
+
+    alt Digitization not found
+        DS-->>DC: throws DigitizationNotFoundException(id)
+        DC-->>GEH: exception propagates
+        GEH-->>Client: 404 Not Found<br/>{ status: 404, message: "Digitization not found with id: {id}" }
+    else Digitization found
+        DS->>TR: findById(tagId)
+        TR->>DB: SELECT FROM tags WHERE id = ?
+        DB-->>TR: row / no row
+        TR-->>DS: Optional (Tag or empty)
+
+        alt Tag not found
+            DS-->>DC: throws TagNotFoundException(tagId)
+            DC-->>GEH: exception propagates
+            GEH-->>Client: 404 Not Found<br/>{ status: 404, message: "Tag not found: {tagId}" }
+        else Tag found
+            DS->>D: addTag(tag)
+            D->>D: add only if it does not have it yet
+            DS->>DR: save(digitization)
+            DR->>DB: INSERT INTO digitization_tags
+            DS->>DS: toResponse(saved)
+            DS-->>DC: DigitizationResponseDTO
+            DC-->>Client: 200 OK<br/>{ id, url, description, pieceId, tags }
+        end
+    end
+</script>
+
+<!-- Mermaid local (funciona sin internet); si falta el archivo, se usa el CDN -->
+<script src="vendor/mermaid.min.js"></script>
+<script>
+if (!window.mermaid) document.write('<script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"><\/script>');
+</script>
+
+<script>
+/* ===========================================
+   SLIDE PRESENTATION CONTROLLER
+   Teclado (flechas, espacio, PageUp/Down, Home/End), rueda, swipe.
+   =========================================== */
+class SlidePresentation {
+    constructor() {
+        this.slides = [...document.querySelectorAll('.slide')];
+        this.stage = document.getElementById('deckStage');
+        this.progress = document.getElementById('progress');
+        this.current = 0;
+        this.setupStageScale();
+        this.setupKeyboardNav();
+        this.setupWheelNav();
+        this.setupTouchNav();
+        const fromHash = parseInt(location.hash.replace('#', ''), 10);
+        this.show(Number.isFinite(fromHash) ? fromHash - 1 : 0);
+    }
+
+    setupStageScale() {
+        const scale = () => {
+            const f = Math.min(innerWidth / 1920, innerHeight / 1080);
+            const x = (innerWidth - 1920 * f) / 2, y = (innerHeight - 1080 * f) / 2;
+            this.stage.style.transform = `translate(${x}px, ${y}px) scale(${f})`;
+        };
+        scale();
+        addEventListener('resize', scale);
+    }
+
+    setupKeyboardNav() {
+        document.addEventListener('keydown', (e) => {
+            if (document.body.classList.contains('editing')) return;
+            if (['ArrowRight', 'ArrowDown', 'PageDown', ' '].includes(e.key)) { e.preventDefault(); this.show(this.current + 1); }
+            else if (['ArrowLeft', 'ArrowUp', 'PageUp'].includes(e.key)) { e.preventDefault(); this.show(this.current - 1); }
+            else if (e.key === 'Home') this.show(0);
+            else if (e.key === 'End') this.show(this.slides.length - 1);
+            else if (e.key === 'Escape') closeZoom();
+            else if (e.key === 'n' || e.key === 'N') document.getElementById('notesPanel').classList.toggle('show');
+        });
+    }
+
+    setupWheelNav() {
+        let lock = false;
+        addEventListener('wheel', (e) => {
+            if (lock || document.querySelector('.sheet.zoomed')) return;
+            lock = true; setTimeout(() => lock = false, 700);
+            this.show(this.current + (e.deltaY > 0 ? 1 : -1));
+        }, { passive: true });
+    }
+
+    setupTouchNav() {
+        let x0 = null;
+        addEventListener('touchstart', (e) => { x0 = e.touches[0].clientX; }, { passive: true });
+        addEventListener('touchend', (e) => {
+            if (x0 === null) return;
+            const dx = e.changedTouches[0].clientX - x0;
+            if (Math.abs(dx) > 50) this.show(this.current + (dx < 0 ? 1 : -1));
+            x0 = null;
+        });
+    }
+
+    show(i) {
+        closeZoom();
+        this.current = Math.max(0, Math.min(i, this.slides.length - 1));
+        this.slides.forEach((s, k) => {
+            s.classList.toggle('active', k === this.current);
+            s.classList.toggle('visible', k === this.current);
+        });
+        this.progress.style.width = ((this.current + 1) / this.slides.length * 100) + '%';
+        history.replaceState(null, '', '#' + (this.current + 1));
+        const notes = this.slides[this.current].querySelector('aside.notes');
+        document.getElementById('npHead').textContent = `Notas · ficha ${this.current + 1} / ${this.slides.length}`;
+        document.getElementById('npBody').innerHTML = notes ? notes.innerHTML : '';
+    }
+}
+
+/* ===========================================
+   DIAGRAM ZOOM
+   Clic en un diagrama: lo amplía a toda la ficha. Clic de nuevo o Esc: vuelve.
+   =========================================== */
+function closeZoom() {
+    document.querySelectorAll('.sheet.zoomed, .sheet.magnified').forEach(s => { s.classList.remove('zoomed', 'magnified'); const svg = s.querySelector('svg'); if (svg) svg.style.transform = ''; });
+    document.querySelectorAll('.card.has-zoom').forEach(c => c.classList.remove('has-zoom'));
+}
+document.querySelectorAll('.sheet').forEach(sheet => {
+    sheet.addEventListener('click', (event) => {
+        if (document.body.classList.contains('editing')) return;
+        // 1er clic: ampliar a toda la ficha · 2do clic: lupa x2.4 en ese punto · 3er clic: cerrar
+        if (!sheet.classList.contains('zoomed')) { closeZoom(); sheet.classList.add('zoomed'); sheet.closest('.card').classList.add('has-zoom'); return; }
+        if (!sheet.classList.contains('magnified')) {
+            const svg = sheet.querySelector('svg'); if (!svg) return;
+            const b = sheet.getBoundingClientRect();
+            const px = ((event.clientX - b.left) / b.width) * 100, py = ((event.clientY - b.top) / b.height) * 100;
+            svg.style.transformOrigin = px + '% ' + py + '%'; svg.style.transform = 'scale(2.4)';
+            sheet.classList.add('magnified'); return;
+        }
+        closeZoom();
+    });
+});
+document.querySelectorAll('.zoom-backdrop').forEach(b => b.addEventListener('click', closeZoom));
+
+/* ===========================================
+   MERMAID RENDERING
+   Tema "ficha": papel crema, tinta negra, acento rojo.
+   Se espera a que carguen las fuentes para que el texto mida bien.
+   =========================================== */
+async function renderDiagrams() {
+    if (!window.mermaid) {
+        document.querySelectorAll('.diagram').forEach(d => d.innerHTML = '<div class="pendiente">No se pudo cargar mermaid.js</div>');
+        return;
+    }
+    mermaid.initialize({
+        startOnLoad: false,
+        theme: 'base',
+        securityLevel: 'loose',
+        themeVariables: {
+            fontFamily: '"Archivo Narrow", "Arial Narrow", sans-serif',
+            fontSize: '18px',
+            background: '#f8f2e2',
+            primaryColor: '#f3ead2',
+            primaryBorderColor: '#1d1b17',
+            primaryTextColor: '#1d1b17',
+            secondaryColor: '#e7dcbd',
+            tertiaryColor: '#efe6cf',
+            lineColor: '#3a362e',
+            textColor: '#1d1b17',
+            clusterBkg: '#ece2c6',
+            clusterBorder: '#7a6f5a',
+            edgeLabelBackground: '#f8f2e2',
+            actorBkg: '#f3ead2',
+            actorBorder: '#1d1b17',
+            actorTextColor: '#1d1b17',
+            signalColor: '#1d1b17',
+            signalTextColor: '#1d1b17',
+            labelBoxBkgColor: '#efe6cf',
+            labelBoxBorderColor: '#b3261e',
+            labelTextColor: '#b3261e',
+            loopTextColor: '#b3261e',
+            noteBkgColor: '#fff4cf',
+            noteBorderColor: '#7a6f5a',
+            activationBkgColor: '#e7dcbd',
+            sequenceNumberColor: '#ffffff',
+        },
+        flowchart: { curve: 'basis', nodeSpacing: 18, rankSpacing: 30, padding: 6, useMaxWidth: true },
+        sequence: { mirrorActors: false, actorMargin: 24, messageMargin: 14, boxMargin: 4, boxTextMargin: 4, noteMargin: 6, diagramMarginX: 8, diagramMarginY: 4, height: 46, messageFontSize: 17, actorFontSize: 17, noteFontSize: 16, useMaxWidth: true },
+        er: { useMaxWidth: true },
+        class: { useMaxWidth: true },
+    });
+    try { await document.fonts.ready; } catch (e) { /* offline: fallback fonts */ }
+    const boxes = [...document.querySelectorAll('.diagram[data-diagram]')];
+    for (const [i, box] of boxes.entries()) {
+        if (box.querySelector('svg')) continue; // already rendered (saved file)
+        const src = document.getElementById('src-' + box.dataset.diagram).textContent.trim();
+        try {
+            const { svg } = await mermaid.render('mmd-' + i, src);
+            box.innerHTML = svg;
+            const el = box.querySelector('svg');
+            el.removeAttribute('style'); el.setAttribute('width', '100%'); el.setAttribute('height', '100%');
+            el.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+        } catch (err) {
+            box.innerHTML = '<div class="pendiente">[Error al renderizar el diagrama: ' + err.message + ']</div>';
+        }
+    }
+    // Destacar la tabla intermedia en el diagrama de base de datos
+    document.querySelectorAll('.diagram[data-diagram="db"] g[id^="entity-digitizationtags"], .diagram[data-diagram="db"] g[id^="entity-digitization_tags"]').forEach(g => {
+        g.querySelectorAll('rect, path').forEach(r => { r.style.stroke = '#b3261e'; r.style.strokeWidth = '3px'; });
+    });
+}
+
+/* ===========================================
+   INLINE EDITING
+   E (o hover en la esquina superior izquierda) activa la edición de textos.
+   Ctrl+S descarga el HTML editado: reemplazá presentacion/index.html con ese archivo.
+   =========================================== */
+const editor = {
+    isActive: false,
+    selector: '.title, .body p, .body li, .point, .mini h3, .mini p, .fields .row > span:not(.k), table.ledger td, .chip, .pendiente, .layer span, aside.notes',
+    toggleEditMode() {
+        this.isActive = !this.isActive;
+        document.body.classList.toggle('editing', this.isActive);
+        document.getElementById('editToggle').classList.toggle('active', this.isActive);
+        document.querySelectorAll(this.selector).forEach(el => {
+            if (this.isActive) el.setAttribute('contenteditable', 'true'); else el.removeAttribute('contenteditable');
+        });
+    },
+    save() {
+        const wasActive = this.isActive;
+        if (wasActive) this.toggleEditMode();
+        closeZoom();
+        const html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
+        a.download = 'index.html';
+        a.click();
+        if (wasActive) this.toggleEditMode();
+    }
+};
+(() => {
+    const hot = document.querySelector('.edit-hotzone'), btn = document.getElementById('editToggle');
+    let t = null;
+    btn.addEventListener('click', () => editor.toggleEditMode());
+    hot.addEventListener('click', () => editor.toggleEditMode());
+    hot.addEventListener('mouseenter', () => { clearTimeout(t); btn.classList.add('show'); });
+    hot.addEventListener('mouseleave', () => { t = setTimeout(() => { if (!editor.isActive) btn.classList.remove('show'); }, 400); });
+    btn.addEventListener('mouseenter', () => clearTimeout(t));
+    btn.addEventListener('mouseleave', () => { t = setTimeout(() => { if (!editor.isActive) btn.classList.remove('show'); }, 400); });
+    document.addEventListener('keydown', (e) => {
+        if ((e.key === 'e' || e.key === 'E') && !e.target.getAttribute('contenteditable')) editor.toggleEditMode();
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') { e.preventDefault(); editor.save(); }
+    });
+})();
+
+/* ===========================================
+   INIT
+   =========================================== */
+const deck = new SlidePresentation();
+renderDiagrams();
+</script>
+</body>
+</html>
