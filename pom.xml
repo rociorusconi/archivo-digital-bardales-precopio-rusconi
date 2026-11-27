@@ -31,6 +31,7 @@
   </scm>
   <properties>
     <java.version>21</java.version>
+    <telegrambots.version>10.3.0</telegrambots.version>
   </properties>
 
   <dependencies>
@@ -49,6 +50,18 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-webmvc</artifactId>
+    </dependency>
+
+    <!-- Telegram bot (Visualización): long polling + HTTP client for the Bot API -->
+    <dependency>
+      <groupId>org.telegram</groupId>
+      <artifactId>telegrambots-longpolling</artifactId>
+      <version>${telegrambots.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.telegram</groupId>
+      <artifactId>telegrambots-client</artifactId>
+      <version>${telegrambots.version}</version>
     </dependency>
 
     <dependency>

@@ -132,9 +132,8 @@ Módulos lógicos del dominio atravesando las capas definidas en `AGENTS.md`:
 | Disponibilización | (consulta sobre `Piece`) | Búsqueda de piezas por fecha, nombre, descripción y tags | API REST |
 | Visualización | (sin entidades propias) | Interpretar comandos del bot y presentar resultados | Bot de Telegram |
 
-Flujo entre capas: `controller` → `service` → `repository` → base de datos. El bot de Telegram
-actúa como un cliente más de la capa `service` de Disponibilización: no accede a los
-repositorios directamente.
+Flujo entre capas: `controller` → `service` → `repository` → base de datos. El bot de Telegram es un cliente más de la API REST: llama por HTTP a los controllers (no a los services ni a los repositorios), así pasa por las mismas capas, validaciones y respuestas de error que cualquier
+cliente. Telegram se conecta con un adapter, para poder cambiarlo por otra plataforma sin tocar el resto (ver `docs/bot.md`).
 
 ## 7. Diagrama de clases de dominio
 
@@ -177,8 +176,7 @@ Reglas de dominio identificadas:
   Una fecha exacta se busca con `dateFrom` = `dateTo`.
 - **Paginación y orden:** 20 resultados por página por defecto, máximo 50.
   Orden por fecha descendente y, ante empate, por id.
-- **Bot de Telegram:** long polling, porque permite correrlo en local sin exponer
-  la aplicación a internet. *(a confirmar por el grupo)*
+- **Bot de Telegram:** long polling en local, porque permite correrlo sin exponer la aplicación a internet, y webhook opcional para un servidor desplegado (Telegram llama a la aplicación y la despierta si el servidor la apaga sin tráfico). Librería `telegrambots`; el token se lee de la variable de entorno `TELEGRAM_BOT_TOKEN` (o de un archivo `.env` local, ignorado por git) y sin él el bot no arranca. El bot consume la API REST por HTTP (`ArchiveApiClient`) y Telegram queda detrás de un adapter (`TelegramBot`). Ver `docs/bot.md`.
 - **Issues y labels:** definidos en `Backlog.md` y cargados en GitHub Projects.
 
 ### Próximos pasos
