@@ -1,10 +1,10 @@
 name: Deploy
 
-# Every push to main: run the tests, build the Docker image, publish it in GitHub
+# Every push to pre-prod: run the tests, build the Docker image, publish it in GitHub
 # (ghcr.io) and restart the application on the VPS. Each job runs only if the previous one passed.
 on:
   push:
-    branches: [main]
+    branches: [pre-prod] # deploy branch, separate from main until the group decides
   workflow_dispatch: # also lets you run it by hand from the Actions tab
 
 env:

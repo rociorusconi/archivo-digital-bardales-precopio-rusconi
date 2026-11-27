@@ -6,7 +6,7 @@ Extra opcional de la consigna. En local no cambia nada: se sigue usando `./mvnw 
 
 ```mermaid
 flowchart LR
-    dev[Push a main] --> test[Actions: mvn verify]
+    dev[Push a pre-prod] --> test[Actions: mvn verify]
     test --> image[Actions: build de la imagen Docker]
     image --> ghcr[(ghcr.io)]
     image --> deploy[Actions: SSH al VPS]
@@ -59,8 +59,8 @@ En el repo: *Settings → Secrets and variables → Actions*.
 | `VPS_USER` | Usuario con permiso para usar Docker |
 | `VPS_SSH_KEY` | Clave privada SSH cuya pública está en `~/.ssh/authorized_keys` del VPS |
 
-Después de cada push a `main` (o a mano desde *Actions → Deploy → Run workflow*), la API queda en
-`http://<ip-del-vps>:8080`.
+Después de cada push a la rama `pre-prod`, la API queda en `http://<ip-del-vps>:8080`.
+(El botón *Actions → Deploy → Run workflow* aparece recién cuando `deploy.yml` está en `main`.)
 
 ## Probarlo en local con Docker
 
