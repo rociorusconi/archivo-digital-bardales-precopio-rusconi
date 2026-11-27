@@ -1,0 +1,10 @@
+piece_name,piece_description,piece_date,url,digitization_description,tags
+Carta desde Rosario,"Carta manuscrita, enviada a un hermano",1979-02-11,https://archivo.example/rosario-p1.pdf,Pagina 1,Cartas|Manuscrito
+Carta desde Rosario,"Carta manuscrita, enviada a un hermano",1979-02-11,https://archivo.example/rosario-p2.pdf,Pagina 2,Cartas
+Carta desde Cordoba,Carta manuscrita enviada a la familia,1977-05-03,https://archivo.example/carta-cordoba-sobre.jpg,Escaneo del sobre,Cartas
+Volante de la marcha,Volante impreso,1982-04-02,https://archivo.example/volante.jpg,Frente,Prensa local
+Foto del acto,,1983-12-10,no-es-una-url,Foto,Fotografia
+Recorte de diario,Recorte sobre el acto,10/12/1983,https://archivo.example/recorte-acto.jpg,Recorte,Prensa
+,Pieza sin nombre,1980-01-01,https://archivo.example/sin-nombre.pdf,,
+Afiche sin fecha,Afiche sin fecha conocida,,https://archivo.example/afiche-sin-fecha.jpg,Frente,Afiches
+Carta desde Rosario,"Carta manuscrita, enviada a un hermano",1979-02-11,https://archivo.example/rosario-p1.pdf,Pagina 1 repetida,Cartas

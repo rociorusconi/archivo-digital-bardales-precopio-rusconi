@@ -2,6 +2,7 @@ package ar.edu.unsam.ddso.tp.repository;
 
 import ar.edu.unsam.ddso.tp.model.Piece;
 import java.time.LocalDate;
+import java.util.Optional;
 import java.util.Set;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,6 +11,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface PieceRepository extends JpaRepository<Piece, Long> {
+
+    Optional<Piece> findFirstByNameIgnoreCaseAndDate(String name, LocalDate date);
+
+    Optional<Piece> findFirstByNameIgnoreCaseAndDateIsNull(String name);
 
     /**
      * A null filter (or no tags) does not restrict. Texts arrive in lowercase. A piece has a tag if
