@@ -1,0 +1,39 @@
+# Production: the application and its PostgreSQL database.
+# On the server: `docker compose pull && docker compose up -d` (the deploy workflow does it).
+# Locally, to build the image from the sources: `docker compose up --build`.
+# Values come from a .env file next to this one (see .env.example).
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: archivo
+      POSTGRES_USER: archivo
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
+    volumes:
+      - db-data:/var/lib/postgresql/data # data survives restarts and deploys
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U archivo -d archivo"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    image: ${APP_IMAGE:-ghcr.io/rociorusconi/archivo-digital-bardales-precopio-rusconi:latest}
+    build: .
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy # waits until PostgreSQL accepts connections
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      DB_URL: jdbc:postgresql://db:5432/archivo
+      DB_USERNAME: archivo
+      DB_PASSWORD: ${DB_PASSWORD}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+    ports:
+      - "${APP_PORT:-8080}:8080"
+
+volumes:
+  db-data:
