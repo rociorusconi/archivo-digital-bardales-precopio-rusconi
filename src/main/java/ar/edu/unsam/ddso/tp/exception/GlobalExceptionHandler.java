@@ -13,6 +13,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -20,7 +22,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({
         PieceNotFoundException.class,
         TagNotFoundException.class,
-        DigitizationNotFoundException.class
+        DigitizationNotFoundException.class,
+        ImportJobNotFoundException.class
     })
     public ResponseEntity<ErrorResponseDTO> handleNotFound(RuntimeException ex) {
         return buildResponse(HttpStatus.NOT_FOUND, ex);
@@ -31,7 +34,11 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.CONFLICT, ex);
     }
 
-    @ExceptionHandler({InvalidTagNameException.class, InvalidDateRangeException.class})
+    @ExceptionHandler({
+        InvalidTagNameException.class,
+        InvalidDateRangeException.class,
+        InvalidImportFileException.class
+    })
     public ResponseEntity<ErrorResponseDTO> handleBadRequest(RuntimeException ex) {
         return buildResponse(HttpStatus.BAD_REQUEST, ex);
     }
@@ -58,6 +65,20 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponseDTO> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
         return ResponseEntity.badRequest()
                 .body(new ErrorResponseDTO(HttpStatus.BAD_REQUEST.value(), ex.getName() + ": invalid value"));
+    }
+
+    // POST /api/imports without the "file" part.
+    @ExceptionHandler(MissingServletRequestPartException.class)
+    public ResponseEntity<ErrorResponseDTO> handleMissingPart(MissingServletRequestPartException ex) {
+        return ResponseEntity.badRequest()
+                .body(new ErrorResponseDTO(HttpStatus.BAD_REQUEST.value(), ex.getRequestPartName() + ": is required"));
+    }
+
+    // Uploaded file larger than spring.servlet.multipart.max-file-size.
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<ErrorResponseDTO> handleFileTooLarge(MaxUploadSizeExceededException ex) {
+        return ResponseEntity.status(HttpStatus.CONTENT_TOO_LARGE)
+                .body(new ErrorResponseDTO(HttpStatus.CONTENT_TOO_LARGE.value(), "The file is too large (max 10MB)"));
     }
 
     private ResponseEntity<ErrorResponseDTO> buildResponse(HttpStatus status, RuntimeException ex) {

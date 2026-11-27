@@ -38,6 +38,8 @@ Otros pedidos mal formados también responden `400` con el mismo formato:
 | `400 Bad Request` | Datos inválidos (campo obligatorio vacío, URL mal formada, texto demasiado largo, nombre de tag vacío, rango de fechas invertido, fecha mal escrita) |
 | `404 Not Found` | El recurso pedido no existe |
 | `409 Conflict` | Conflicto con el estado actual (tag duplicado o tag en uso) |
+| `202 Accepted` | Carga masiva iniciada; sigue en segundo plano |
+| `413 Content Too Large` | Archivo de la carga masiva mayor a 10 MB |
 
 ## Resumen de endpoints
 
@@ -54,6 +56,8 @@ Otros pedidos mal formados también responden `400` con el mismo formato:
 | Catalogación | `POST` | `/api/digitizations/{id}/tags/{tagId}` | Asignar un tag a una digitalización |
 | Catalogación | `DELETE` | `/api/digitizations/{id}/tags/{tagId}` | Quitar un tag de una digitalización |
 | Disponibilización | `GET` | `/api/pieces/search` | Buscar piezas con filtros y paginación |
+| Carga masiva | `POST` | `/api/imports` | Cargar piezas, digitalizaciones y tags desde un CSV (en segundo plano) |
+| Carga masiva | `GET` | `/api/imports/{id}` | Ver el avance y los errores de una carga |
 
 ---
 
@@ -415,3 +419,93 @@ GET /api/pieces/search?name=letter&dateFrom=1970-01-01&dateTo=1980-12-31&page=0&
 > **Pendiente:**
 > - Los caracteres `%` y `_` en `name` o `description` no se escapan y funcionan como comodines
 >   (por ejemplo, `name=%` devuelve todas las piezas).
+
+---
+
+## Carga masiva (proceso batch)
+
+Carga muchas piezas de una vez desde un archivo CSV, con sus digitalizaciones y los tags de cada una. El proceso corre **en segundo plano**: `POST` responde enseguida y el avance se consulta con `GET`. Cada fila pasa por las mismas reglas que la API (validaciones de los DTOs, tags del catálogo y los mismos services); si una fila tiene errores se saltea, se informa y el proceso sigue.
+
+### Formato del CSV
+
+Una fila por digitalización, con este encabezado (UTF-8, separado por comas; un valor con comas va entre comillas). Hay un ejemplo en [`examples/import-example.csv`](examples/import-example.csv).
+
+```csv
+piece_name,piece_description,piece_date,url,digitization_description,tags
+Carta desde Rosario,"Carta manuscrita, enviada a un hermano",1979-02-11,https://archivo.example/rosario-p1.pdf,Pagina 1,Cartas|Manuscrito
+Carta desde Rosario,"Carta manuscrita, enviada a un hermano",1979-02-11,https://archivo.example/rosario-p2.pdf,Pagina 2,Cartas
+```
+
+| Columna | Obligatoria | Detalle |
+|---|---|---|
+| `piece_name` | Sí | Nombre de la pieza (máx. 255) |
+| `piece_description` | No | Máx. 1000 |
+| `piece_date` | No | `yyyy-MM-dd` |
+| `url` | Sí | URL válida (máx. 255) |
+| `digitization_description` | No | Máx. 1000 |
+| `tags` | No | Separados por `\|`. Tienen que **existir** en el catálogo (sin distinguir mayúsculas); el batch no crea tags |
+
+Reglas:
+- **Misma pieza:** las filas con el mismo nombre (sin distinguir mayúsculas) y la misma fecha son la misma pieza, también si ya existía en el archivo: se le agregan las digitalizaciones. Por eso las dos filas del ejemplo crean **una** pieza con dos digitalizaciones.
+- **Sin duplicados:** si la pieza ya tiene una digitalización con esa `url`, la fila se informa como error y no se carga de nuevo. Así, se puede corregir el CSV y volver a subirlo entero.
+- **Por bloques:** las filas se guardan de a 100, cada bloque en su propia transacción.
+- Tamaño máximo del archivo: 10 MB.
+
+### `POST /api/imports` — Iniciar una carga
+
+Recibe el archivo como `multipart/form-data` en el campo `file`. Desde Swagger UI se puede elegir el archivo con un botón.
+
+```bash
+curl -F "file=@docs/examples/import-example.csv" http://localhost:8080/api/imports
+```
+
+**Respuesta `202 Accepted`** (con el header `Location: /api/imports/1`). El proceso recién empieza:
+
+```json
+{
+  "id": 1, "fileName": "import-example.csv", "status": "IN_PROGRESS",
+  "totalRows": 9, "processedRows": 0, "createdPieces": 0, "createdDigitizations": 0,
+  "errors": [], "failureMessage": null,
+  "createdAt": "2026-11-26T23:00:27.048", "finishedAt": null
+}
+```
+
+**Errores** (el archivo no se procesa):
+
+| Código | Cuándo | `message` |
+|---|---|---|
+| `400` | Falta el campo `file` | `file: is required` |
+| `400` | Archivo vacío | `The file is empty` |
+| `400` | Faltan columnas | `Missing columns: piece_date, tags. Expected: piece_name,...` |
+| `400` | Solo tiene el encabezado | `The file has no data rows` |
+| `400` | No es un CSV válido (por ejemplo, comillas sin cerrar) | `The file is not a valid CSV: ...` |
+| `413` | Supera los 10 MB | `The file is too large (max 10MB)` |
+
+### `GET /api/imports/{id}` — Ver el avance de una carga
+
+**Respuesta `200 OK`** con el ejemplo ya terminado:
+
+```json
+{
+  "id": 1, "fileName": "import-example.csv", "status": "COMPLETED",
+  "totalRows": 9, "processedRows": 9, "createdPieces": 2, "createdDigitizations": 4,
+  "errors": [
+    { "line": 5, "message": "tags: the tag 'Prensa local' does not exist" },
+    { "line": 6, "message": "url: must be a valid URL" },
+    { "line": 7, "message": "piece_date: invalid date '10/12/1983', use yyyy-MM-dd" },
+    { "line": 8, "message": "piece_name: must not be blank" },
+    { "line": 10, "message": "url: already loaded for the piece 'Carta desde Rosario'" }
+  ],
+  "failureMessage": null,
+  "createdAt": "2026-11-26T23:00:27.048", "finishedAt": "2026-11-26T23:00:27.554"
+}
+```
+
+| Campo | Detalle |
+|---|---|
+| `status` | `IN_PROGRESS` (corriendo), `COMPLETED` (terminó, con o sin filas rechazadas) o `FAILED` (lo cortó un error inesperado; queda en `failureMessage` y se conservan los bloques ya guardados) |
+| `errors` | Filas rechazadas: `line` es la línea del archivo (el encabezado es la línea 1) |
+
+| Código | Cuándo | Ejemplo |
+|---|---|---|
+| `404` | La carga no existe | `{ "status": 404, "message": "Import not found with id: 99" }` |
